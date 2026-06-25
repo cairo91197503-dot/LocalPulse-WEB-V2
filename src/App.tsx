@@ -8,6 +8,8 @@ import DicasPro from "./pages/DicasPro";
 import Login from "./pages/Login";
 import { auth, onAuthStateChanged, signOut } from "./lib/firebase";
 
+import { Logo, LogoText } from "./components/Logo";
+
 function Layout({ children, onLogout, userPhoto }: { children: React.ReactNode, onLogout: () => void, userPhoto: string | null }) {
   const location = useLocation();
 
@@ -23,10 +25,8 @@ function Layout({ children, onLogout, userPhoto }: { children: React.ReactNode, 
       {/* Sidebar for Desktop */}
       <aside className="hidden md:flex w-64 flex-col bg-white border-r border-gray-200">
         <div className="p-6 border-b border-gray-200 flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">L</span>
-          </div>
-          <h1 className="text-xl font-bold tracking-tight">LocalPulse</h1>
+          <Logo className="w-10 h-10" />
+          <LogoText className="text-2xl font-bold tracking-tight" />
         </div>
         
         <nav className="flex-1 p-4 space-y-2">
@@ -39,11 +39,11 @@ function Layout({ children, onLogout, userPhoto }: { children: React.ReactNode, 
                 to={item.path}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                   isActive 
-                    ? "bg-blue-50 text-blue-700 font-medium" 
+                    ? "bg-teal-50 text-teal-700 font-medium" 
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
-                <Icon size={20} className={isActive ? "text-blue-600" : "text-gray-400"} />
+                <Icon size={20} className={isActive ? "text-teal-600" : "text-gray-400"} />
                 {item.label}
               </Link>
             );
@@ -70,10 +70,8 @@ function Layout({ children, onLogout, userPhoto }: { children: React.ReactNode, 
         {/* Mobile Header */}
         <header className="md:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between sticky top-0 z-10">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">L</span>
-            </div>
-            <h1 className="text-xl font-bold tracking-tight">LocalPulse</h1>
+            <Logo className="w-8 h-8" />
+            <LogoText className="text-xl font-bold tracking-tight" />
           </div>
           <button onClick={onLogout} className="p-2 text-red-600 bg-red-50 rounded-full flex items-center gap-2">
             {userPhoto ? (
@@ -100,7 +98,7 @@ function Layout({ children, onLogout, userPhoto }: { children: React.ReactNode, 
               key={item.path}
               to={item.path}
               className={`flex flex-col items-center gap-1 p-2 ${
-                isActive ? "text-blue-600" : "text-gray-500"
+                isActive ? "text-teal-600" : "text-gray-500"
               }`}
             >
               <Icon size={24} />

@@ -96,13 +96,13 @@ export default function QrCodeView() {
                   value={inputUrl}
                   onChange={(e) => setInputUrl(e.target.value)}
                   placeholder="Ex: https://g.page/r/XYZ/review"
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all"
                 />
               </div>
               <button 
                 onClick={handleSaveUrl}
                 disabled={saving || !inputUrl}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-colors disabled:opacity-50"
+                className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-xl transition-colors disabled:opacity-50"
               >
                 {saving ? 'Salvando...' : 'Gerar'}
               </button>
@@ -130,7 +130,7 @@ export default function QrCodeView() {
             <div className="flex w-full max-w-sm gap-4 mb-6">
               <button 
                 onClick={downloadQR}
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-2xl transition-colors"
               >
                 <Download size={20} />
                 Baixar

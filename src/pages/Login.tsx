@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Shield, TrendingUp, Sparkles } from 'lucide-react';
 import { signInWithPopup, auth, googleProvider } from '../lib/firebase';
+import { Logo, LogoText } from '../components/Logo';
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
@@ -21,17 +22,13 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center flex flex-col items-center">
         <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
-            <TrendingUp size={32} />
-          </div>
+          <Logo className="w-20 h-20" />
         </div>
-        <h2 className="text-3xl font-black text-gray-900 tracking-tight">
-          LocalPulse
-        </h2>
+        <LogoText className="text-4xl font-black justify-center tracking-tight mb-2" />
         <p className="mt-2 text-sm text-gray-600 font-medium">
-          Domine o Google Maps e exploda suas vendas locais
+          Reputação. Conteúdo. Resultados.
         </p>
       </div>
 

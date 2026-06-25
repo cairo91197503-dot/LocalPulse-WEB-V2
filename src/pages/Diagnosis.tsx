@@ -66,7 +66,7 @@ export default function Diagnosis() {
 
       {loading && (
         <div className="flex flex-col items-center justify-center py-24 space-y-4">
-          <div className="animate-spin text-blue-600">
+          <div className="animate-spin text-purple-600">
             <RefreshCw size={32} />
           </div>
           <p className="text-gray-500 font-medium">Analisando sua presença online...</p>
@@ -135,7 +135,7 @@ export default function Diagnosis() {
 
           {data.acoes_prioritarias.length > 0 && (
             <div>
-              <h3 className="text-blue-700 font-bold flex items-center gap-2 mb-3 px-2 mt-6">
+              <h3 className="text-purple-700 font-bold flex items-center gap-2 mb-3 px-2 mt-6">
                 <Target size={20} /> Ações prioritárias
               </h3>
               <div className="space-y-3">
