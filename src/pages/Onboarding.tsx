@@ -14,7 +14,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
     },
     {
       title: "Diagnóstico com IA",
-      desc: "Avalie automaticamente a saúde do seu perfil no Google Meu Negócio usando a nossa Inteligência Artificial.",
+      desc: "Avalie automaticamente a saúde do seu Perfil da Empresa no Google usando a nossa Inteligência Artificial.",
       icon: <Sparkles className="w-24 h-24 text-purple-600 drop-shadow-md" />,
       color: "from-purple-500 to-indigo-500"
     },

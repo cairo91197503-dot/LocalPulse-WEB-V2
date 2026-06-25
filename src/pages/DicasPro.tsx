@@ -191,7 +191,7 @@ export default function DicasPro() {
           Curso Completo
         </div>
         <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-4">
-          Google Meu Negócio
+          Perfil da Empresa no Google
         </h1>
         <p className="text-lg text-gray-500 max-w-2xl leading-relaxed">
           Domine as estratégias práticas do Perfil de Empresa do Google para ranquear no topo do Maps e explodir suas vendas locais.

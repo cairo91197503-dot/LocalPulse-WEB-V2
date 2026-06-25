@@ -19,7 +19,7 @@ function Layout({ children, onLogout, userPhoto }: { children: React.ReactNode, 
     { path: "/", label: "Início", icon: Home },
     { path: "/diagnosis", label: "Diagnóstico IA", icon: Sparkles },
     { path: "/qrcode", label: "QR Code", icon: QrCode },
-    { path: "/dicas", label: "Curso GMN", icon: GraduationCap },
+    { path: "/dicas", label: "Curso do Perfil", icon: GraduationCap },
   ];
 
   return (

@@ -22,79 +22,83 @@ export interface Module {
 export const COURSE_MODULES: Module[] = [
   {
     id: 1,
-    title: "1. O que é Google Meu Negócio?",
-    tagline: "Aprenda o poder do Perfil da Empresa",
+    title: "1. O Que é o Perfil da Empresa?",
+    tagline: "Entenda a plataforma atual do Google",
     icon: "🏪",
     color: "#4285F4",
     pages: [
       {
-        title: "O que é o Perfil da Empresa?",
-        subtitle: "Ferramenta Gratuita do Google",
+        title: "Ferramenta Gratuita",
+        subtitle: "Apresentação na Pesquisa e Maps",
         paragraphs: [
-          "O antigo Google Meu Negócio, hoje chamado de Perfil da Empresa no Google, é uma ferramenta totalmente gratuita.",
-          "Ela permite que sua empresa apareça de forma destacada no Google Maps e nos resultados tradicionais de pesquisa do Google."
+          "O Perfil da Empresa no Google é uma ferramenta gratuita que permite gerenciar como uma empresa aparece na Pesquisa Google e no Google Maps.",
+          "Hoje não existe mais o antigo 'Google Meu Negócio' como plataforma separada. O gerenciamento acontece diretamente pela Pesquisa Google, Google Maps e painel do Perfil da Empresa."
         ],
         type: "concept"
       },
       {
-        title: "Veja um exemplo prático",
-        subtitle: "Como o cliente te encontra",
+        title: "O que o cliente vê?",
+        subtitle: "A resposta para pesquisas locais",
         paragraphs: [
           "Quando alguém pesquisa termos como:",
-          "• 'Restaurante perto de mim'\n• 'Dentista em Anápolis'\n• 'Oficina mecânica aberta agora'",
-          "O Google exibe um mapa com empresas locais. O Perfil da Empresa é o que coloca você no mapa!"
+          "• Restaurante perto de mim\n• Advogado em Anápolis\n• Oficina mecânica aberta agora",
+          "O Google exibe informações vitais da sua empresa para a tomada de decisão."
         ],
         type: "example",
         visualData: {
-          items: ["Restaurante perto de mim 🍕", "Dentista em Anápolis 🦷", "Oficina mecânica aberta agora 🔧"]
+          items: [
+            "Nome da empresa",
+            "Avaliações",
+            "Telefone",
+            "Endereço e Horário",
+            "Fotos",
+            "Site e Rotas",
+            "Produtos e serviços"
+          ]
         }
-      },
-      {
-        title: "Principais Benefícios",
-        subtitle: "O impacto no seu bolso",
-        paragraphs: [
-          "Ao otimizar seu Perfil da Empresa, você garante:",
-          "📈 Mais visibilidade local",
-          "📞 Mais ligações de clientes interessados",
-          "🌐 Mais visitas ao seu site",
-          "📍 Mais pedidos de rota até sua loja física",
-          "💰 Consequentemente, muito mais vendas!"
-        ],
-        type: "stats"
       }
     ]
   },
   {
     id: 2,
-    title: "2. Como o Google Decide o Top 1?",
-    tagline: "Os 3 pilares do ranqueamento local",
+    title: "2. Como o Google Define o Ranking",
+    tagline: "Os três pilares do algoritmo local",
     icon: "🎯",
     color: "#EA4335",
     pages: [
       {
-        title: "Os 3 Pilares do Algoritmo",
-        subtitle: "Entenda o mecanismo do Maps",
+        title: "Relevância",
+        subtitle: "Correspondência exata",
         paragraphs: [
-          "O Google usa três fatores principais para decidir qual empresa aparece primeiro nas buscas locais.",
-          "Compreender estes fatores é crucial para otimizar seu perfil e bater a concorrência."
+          "Quão bem seu perfil corresponde ao que o usuário procura.",
+          "Exemplo:",
+          "Pesquisa: 'Dentista infantil'",
+          "Perfil: Categoria 'Odontopediatra'",
+          "Resultado: Maior relevância para a pesquisa do usuário."
         ],
         type: "concept"
       },
       {
-        title: "1. Relevância & 2. Distância",
-        subtitle: "Correspondência e Proximidade",
+        title: "Distância",
+        subtitle: "O fator geográfico",
         paragraphs: [
-          "🧲 RELEVÂNCIA: O quanto seu perfil corresponde ao que o cliente procura. Exemplo: se procuram 'Pizza em Anápolis', uma pizzaria bem configurada se destaca.",
-          "📍 DISTÂNCIA: Quanto mais próximo do usuário, maiores as chances. *Nota: Este fator não pode ser manipulado geograficamente.*"
+          "A proximidade entre o usuário e o negócio.",
+          "O Google considera:",
+          "• Localização do usuário",
+          "• Região pesquisada",
+          "Não existe forma legítima de manipular esse fator, mas é fundamental estar visível para os clientes ao seu redor."
         ],
         type: "rules"
       },
       {
-        title: "3. Popularidade (Autoridade)",
-        subtitle: "O fator mais importante",
+        title: "Destaque (Prominence)",
+        subtitle: "A autoridade da sua marca",
         paragraphs: [
-          "⭐ POPULARIDADE: O quão conhecido e confiável o seu negócio parece para a internet.",
-          "O Google analisa constantemente: quantidade de avaliações, notas recebidas, frequência de novas fotos, cliques e menções ao seu nome na web."
+          "Representa a popularidade e autoridade da empresa. O Google considera:",
+          "• Avaliações (Quantidade e Qualidade)",
+          "• Citações na internet",
+          "• Autoridade do site",
+          "• Popularidade da marca"
         ],
         type: "stats"
       }
@@ -102,204 +106,184 @@ export const COURSE_MODULES: Module[] = [
   },
   {
     id: 3,
-    title: "3. Configuração Correta do Perfil",
-    tagline: "Evite erros e preencha como um profissional",
-    icon: "⚙️",
-    color: "#FBBC05",
+    title: "3. Criação e Verificação",
+    tagline: "Primeiros passos no Perfil",
+    icon: "✅",
+    color: "#34A853",
     pages: [
       {
-        title: "Nome da Empresa",
-        subtitle: "Não faça Keyword Stuffing!",
+        title: "Cadastro Inicial",
+        subtitle: "Informações obrigatórias",
         paragraphs: [
-          "O nome do perfil deve ser exatamente o nome real e oficial da sua empresa.",
-          "Evite empilhar palavras-chave promocionais no nome, pois isso gera punição e bloqueio do perfil!"
-        ],
-        type: "rules",
-        visualData: {
-          correct: "Oficina do João",
-          incorrect: "Oficina do João Melhor Mecânico de Anápolis Preço Baixo"
-        }
-      },
-      {
-        title: "Categorias: O Segredo",
-        subtitle: "Principal vs. Secundárias",
-        paragraphs: [
-          "CATEGORIA PRINCIPAL: Escolha a mais específica possível (ex: Clínica Odontológica). É o fator de maior peso.",
-          "CATEGORIAS SECUNDÁRIAS: Adicione categorias complementares que também façam parte do seu portfólio (ex: Dentista Estético, Implantodontista, Ortodontista)."
-        ],
-        type: "concept"
-      },
-      {
-        title: "Horários, Serviços e Produtos",
-        subtitle: "Mantenha o catálogo atualizado",
-        paragraphs: [
-          "• Horários: Atualize em feriados e recessos temporários.",
-          "• Serviços: Cadastre cada serviço oferecido detalhadamente.",
-          "• Produtos: Cadastre fotos, descrição técnica e preços dos seus itens principais para habilitar a vitrine."
+          "Para começar, você precisará preencher:",
+          "• Nome real da empresa",
+          "• Categoria principal",
+          "• Endereço (quando aplicável)",
+          "• Área de atendimento",
+          "• Telefone e Site"
         ],
         type: "checklist"
+      },
+      {
+        title: "Processo de Verificação",
+        subtitle: "Confirmando sua propriedade",
+        paragraphs: [
+          "O Google pode solicitar diferentes métodos de verificação para confirmar que o negócio é seu:",
+          "• Vídeo de verificação (gravando o local de trabalho)",
+          "• Telefone (código por SMS ou chamada)",
+          "• E-mail",
+          "• Verificação documental",
+          "Os métodos disponíveis variam conforme o tipo de negócio e região."
+        ],
+        type: "rules"
       }
     ]
   },
   {
     id: 4,
-    title: "4. Fotos que Geram Resultados",
-    tagline: "O poder visual do seu perfil",
-    icon: "📸",
-    color: "#34A853",
+    title: "4. Configuração Profissional",
+    tagline: "Otimize os dados da sua empresa",
+    icon: "⚙️",
+    color: "#FBBC05",
     pages: [
       {
-        title: "Fotos Obrigatórias",
-        subtitle: "O que não pode faltar no perfil",
+        title: "Nome da Empresa",
+        subtitle: "Apenas a verdade",
         paragraphs: [
-          "Perfis ricos em fotos recebem muito mais interações e trazem maior credibilidade:",
-          "🖼️ Fachada: Ajuda clientes a reconhecerem o local ao chegar.",
-          "🛋️ Interior: Passa sensação de organização e segurança.",
-          "👥 Equipe: Humaniza o atendimento.",
-          "📦 Produtos / Serviços: Demonstra os diferenciais do negócio."
+          "Utilize apenas o nome real da sua empresa. Evite colocar termos promocionais ou palavras-chave extras, pois essa prática viola as diretrizes do Google."
         ],
-        type: "concept"
+        type: "rules",
+        visualData: {
+          correct: "Auto Center Brasil",
+          incorrect: "Auto Center Brasil Melhor Oficina Mecânica de Anápolis"
+        }
       },
       {
-        title: "Frequência de Publicação",
-        subtitle: "Mantenha a constância",
+        title: "Categorias",
+        subtitle: "Principal e Secundárias",
         paragraphs: [
-          "A atualização frequente de imagens sinaliza para o robô do Google que sua empresa está ativa e movimentada.",
-          "• Frequência Mínima: 3 a 5 novas fotos por semana.",
-          "• Frequência Ideal: 1 nova foto por dia."
+          "CATEGORIA PRINCIPAL: É um dos fatores mais importantes para o ranking. Escolha a categoria mais específica possível. Exemplo: Melhor 'Clínica Odontológica' do que 'Empresa'.",
+          "CATEGORIAS SECUNDÁRIAS: Adicione categorias complementares que representem outras áreas do seu negócio (Ex: Dentista, Ortodontista, Implantodontista)."
         ],
-        type: "stats"
+        type: "concept"
       }
     ]
   },
   {
     id: 5,
-    title: "5. Estratégia de Avaliações",
-    tagline: "Consiga notas altas e avaliações constantes",
-    icon: "⭐",
-    color: "#FF9900",
+    title: "5. Serviços e Produtos",
+    tagline: "Mostre o que você vende",
+    icon: "🛍️",
+    color: "#00BCD4",
     pages: [
       {
-        title: "Como Conseguir Mais",
-        subtitle: "Gere o hábito de pedir feedback",
+        title: "Serviços",
+        subtitle: "Detalhe sua especialidade",
         paragraphs: [
-          "O gatilho mais forte para novas avaliações é o pedido ativo no encerramento de cada venda:",
-          "💬 'Seu feedback é muito importante para nós! Se gostou do nosso atendimento, poderia deixar uma avaliação rápida no Google? Nos ajuda demais!'"
+          "Cadastre todos os serviços oferecidos pela sua empresa. Isso ajuda o Google a entender exatamente o que você faz.",
+          "Exemplo (Oficina):",
+          "• Troca de óleo",
+          "• Revisão",
+          "• Alinhamento e Balanceamento"
         ],
-        type: "example"
+        type: "checklist"
       },
       {
-        title: "Metas de Crescimento",
-        subtitle: "Objetivos claros",
+        title: "Catálogo de Produtos",
+        subtitle: "Sua vitrine digital",
         paragraphs: [
-          "Sua primeira grande meta deve ser bater 50 avaliações com uma nota média acima de 4.7.",
-          "Depois, busque manter a constância para atingir marcas mais expressivas: 100+, 200+ e até 500+ avaliações."
+          "Para negócios que vendem produtos, o catálogo é essencial. Cada produto cadastrado deve possuir:",
+          "• Nome claro",
+          "• Foto atrativa e de alta qualidade",
+          "• Descrição completa",
+          "• Faixa de preço"
         ],
-        type: "stats"
-      },
-      {
-        title: "Como Responder",
-        subtitle: "Responda a absolutamente 100% delas",
-        paragraphs: [
-          "🟢 POSITIVAS: Agradeça pelo nome e reforce a relação: 'Agradecemos a confiança, João! Volte sempre!'",
-          "🔴 NEGATIVAS: Seja polido, assuma o problema e puxe para o offline: 'Sentimos muito por isso. Entre em contato pelo WhatsApp (XX) XXXX-XXXX para resolvermos seu caso.'"
-        ],
-        type: "rules"
+        type: "concept"
       }
     ]
   },
   {
     id: 6,
-    title: "6. Postagens Semanais",
-    tagline: "Diferencial de mercado pouco explorado",
-    icon: "✍️",
+    title: "6. Fotos e Vídeos",
+    tagline: "O visual que converte clientes",
+    icon: "📸",
     color: "#9C27B0",
     pages: [
       {
-        title: "Sua Vantagem Competitiva",
-        subtitle: "Pouquíssimos concorrentes fazem isso",
+        title: "Fotos Recomendadas",
+        subtitle: "Apresente sua empresa",
         paragraphs: [
-          "A ferramenta de postagens do Google funciona como uma mini rede social de ofertas.",
-          "Usá-la com constância cria uma vantagem gigantesca, pois a maioria das empresas locais abandona essa seção."
-        ],
-        type: "concept"
-      },
-      {
-        title: "Cronograma de Conteúdo",
-        subtitle: "2 a 3 vezes por semana",
-        paragraphs: [
-          "🏷️ Promoções: Ex: 'Troca de óleo com 15% de desconto para novos clientes.'",
-          "🎬 Bastidores: Fotos da equipe trabalhando, organização do ambiente.",
-          "🆕 Novidades: Novos aparelhos, serviços ou produtos recebidos.",
-          "💬 Prova Social: Depoimentos de clientes satisfeitos convertidos em texto."
+          "Conteúdo visual influencia diretamente a confiança dos clientes. Tenha fotos de:",
+          "• Externa (Fachada)",
+          "• Interna (Ambiente)",
+          "• Equipe (Humanização)",
+          "• Produtos (Mostra qualidade)",
+          "• Serviços (Execução real)"
         ],
         type: "checklist"
+      },
+      {
+        title: "Vídeos e Frequência",
+        subtitle: "Mantenha a constância",
+        paragraphs: [
+          "O Google permite vídeos curtos mostrando sua estrutura, atendimento, processos ou produtos.",
+          "Recomendação de Frequência: Adicione novas fotos semanalmente. As atualizações contínuas sinalizam que o negócio está ativo."
+        ],
+        type: "stats"
       }
     ]
   },
   {
     id: 7,
-    title: "7. SEO Local Avançado",
-    tagline: "Otimize seu site e presença digital",
-    icon: "🔍",
-    color: "#00BCD4",
+    title: "7. Avaliações",
+    tagline: "O motor da sua reputação digital",
+    icon: "⭐",
+    color: "#FF9800",
     pages: [
       {
-        title: "Uso de Palavras-chave",
-        subtitle: "Otimização sutil",
+        title: "Como pedir avaliações",
+        subtitle: "Seja proativo",
         paragraphs: [
-          "Insira de maneira natural no campo de descrição da empresa, nos posts e nas respostas de avaliações a combinação:",
-          "👉 [Serviço] + [Cidade/Bairro]",
-          "Exemplo: 'Oficina mecânica especializada em Anápolis.'"
+          "As avaliações são um dos fatores mais importantes para conversão.",
+          "Após o atendimento, peça gentilmente: 'Obrigado pela preferência. Sua avaliação ajuda nossa empresa a melhorar e ajuda outros clientes.'"
         ],
         type: "example"
       },
       {
-        title: "Site Integrado de Qualidade",
-        subtitle: "O Google analisa todo o ecossistema",
+        title: "O que evitar",
+        subtitle: "Práticas proibidas",
         paragraphs: [
-          "Ter um site limpo conectado ao perfil melhora drasticamente o posicionamento.",
-          "Seu site precisa de carregamento rápido, conter a cidade no texto, a lista de serviços oferecidos e o mapa oficial incorporado via iframe do Google Maps."
-        ],
-        type: "concept"
-      },
-      {
-        title: "Consistência NAP",
-        subtitle: "Mantenha os dados idênticos",
-        paragraphs: [
-          "🔒 NAP (Name, Address, Phone):",
-          "Nome, Endereço e Telefone precisam estar idênticos em toda a internet.",
-          "Verifique se o formato cadastrado no site, no Instagram, no Facebook e no Google Meu Negócio é exatamente o mesmo."
+          "Nunca compre avaliações, nunca crie avaliações falsas e evite incentivar avaliações positivas em troca de benefícios financeiros ou brindes condicionados (o Google pode penalizar o perfil)."
         ],
         type: "rules"
+      },
+      {
+        title: "Como responder avaliações",
+        subtitle: "A etiqueta online",
+        paragraphs: [
+          "• Positiva: Agradeça e personalize a resposta.",
+          "• Negativa: Mantenha a calma, responda profissionalmente, mostre empatia e ofereça uma solução fora do ambiente público (telefone/e-mail)."
+        ],
+        type: "concept"
       }
     ]
   },
   {
     id: 8,
-    title: "8. Como Entrar no Top 3?",
-    tagline: "A mina de ouro do tráfego local",
-    icon: "🏆",
-    color: "#FFD700",
+    title: "8. Mensagens e Contatos",
+    tagline: "Comunicação rápida",
+    icon: "💬",
+    color: "#FF5722",
     pages: [
       {
-        title: "A Importância do Top 3",
-        subtitle: "Onde 80% das ligações acontecem",
+        title: "Disponibilidade de Contato",
+        subtitle: "Esteja alcançável",
         paragraphs: [
-          "Estar no Top 3 (os primeiros três resultados que aparecem no mapa principal) garante um fluxo constante de clientes sem precisar investir em anúncios diários."
-        ],
-        type: "concept"
-      },
-      {
-        title: "Checklist dos Campeões",
-        subtitle: "O que focar para vencer",
-        paragraphs: [
-          "✔️ Perfil 100% preenchido e verificado.",
-          "✔️ Novas avaliações chegando todas as semanas.",
-          "✔️ Fotos novas enviadas semanalmente.",
-          "✔️ Atualização frequente através de posts.",
-          "✔️ Respostas imediatas a todas as dúvidas/mensagens recebidas.",
-          "✔️ Um site estruturado de alta velocidade conectado."
+          "Dependendo da disponibilidade do Google para sua região e categoria, os recursos de mensagem podem variar.",
+          "Mantenha sempre:",
+          "• Telefone atualizado e funcional",
+          "• Site no ar",
+          "• Horários de funcionamento corretos (especialmente em feriados)"
         ],
         type: "checklist"
       }
@@ -307,149 +291,220 @@ export const COURSE_MODULES: Module[] = [
   },
   {
     id: 9,
-    title: "9. Seção de Perguntas e Respostas",
-    tagline: "Antecipe as dúvidas do seu comprador",
-    icon: "❓",
-    color: "#607D8B",
+    title: "9. Postagens",
+    tagline: "Atualize sua audiência",
+    icon: "📰",
+    color: "#03A9F4",
     pages: [
       {
-        title: "FAQ Integrado",
-        subtitle: "Você mesmo pode criar as perguntas!",
+        title: "Tipos de Postagens",
+        subtitle: "Variedade de conteúdo",
         paragraphs: [
-          "Sabia que você pode usar sua conta pessoal para fazer perguntas no seu perfil e responder com a conta da sua empresa?",
-          "Isso ajuda o cliente a tirar dúvidas rápidas e alimenta o SEO com palavras-chave relevantes."
+          "As postagens ajudam a manter o perfil atualizado. Use os seguintes formatos:",
+          "• Novidades (Novos produtos)",
+          "• Ofertas (Promoções)",
+          "• Eventos (Datas especiais)",
+          "• Conteúdo Educativo (Dicas e orientações)"
         ],
         type: "concept"
       },
       {
-        title: "Sugestões de Perguntas Úteis",
-        subtitle: "Facilite a tomada de decisão",
+        title: "Frequência de Publicação",
+        subtitle: "Ritmo ideal",
         paragraphs: [
-          "❓ P: 'Vocês atendem aos sábados?'\n👉 R: 'Sim, atendemos das 8h às 12h aos sábados.'",
-          "❓ P: 'Possuem estacionamento próprio?'\n👉 R: 'Sim, temos vagas exclusivas e gratuitas na frente.'",
-          "❓ P: 'Fazem orçamento sem compromisso?'\n👉 R: 'Sim, fazemos sem custo algum.'"
+          "Recomendação de Frequência: 1 a 3 publicações por semana para manter o perfil ativo e relevante."
         ],
-        type: "example"
+        type: "stats"
       }
     ]
   },
   {
     id: 10,
-    title: "10. Google Ads para Negócios",
-    tagline: "Acelere seus resultados no primeiro dia",
-    icon: "📈",
-    color: "#1A73E8",
+    title: "10. SEO Local",
+    tagline: "Apareça nas pesquisas",
+    icon: "🔍",
+    color: "#4CAF50",
     pages: [
       {
-        title: "Tráfego Pago Imediato",
-        subtitle: "Apareça no topo agora mesmo",
+        title: "O que é SEO Local?",
+        subtitle: "Otimização geográfica",
         paragraphs: [
-          "Se você acabou de criar o perfil, o SEO orgânico pode demorar semanas. O Google Ads coloca você no topo de forma instantânea para buscas específicas como 'dentista anápolis'."
+          "SEO Local é o processo de otimizar sua presença para pesquisas geográficas."
         ],
         type: "concept"
       },
       {
-        title: "Campanhas Recomendadas",
-        subtitle: "Formatos eficientes",
+        title: "Palavras-chave e Consistência",
+        subtitle: "Seja encontrado",
         paragraphs: [
-          "• Campanhas Locais: Focadas em gerar rotas no mapa, ligações e contatos de WhatsApp.",
-          "• Performance Max (PMax Local): O próprio Google distribui os anúncios na Pesquisa, Maps, YouTube, Gmail e Rede de Display de forma inteligente."
-        ],
-        type: "stats"
-      },
-      {
-        title: "Orçamento Inicial",
-        subtitle: "Quanto investir?",
-        paragraphs: [
-          "• Pequenos Negócios Locais: R$ 20,00 a R$ 50,00 por dia são suficientes para dominar o bairro.",
-          "• Empresas de Médio/Grande Porte: R$ 100,00+ por dia para cobrir uma cidade inteira de forma massiva."
+          "Palavras-chave (ex: 'Oficina mecânica em Anápolis') devem aparecer naturalmente no site, nas páginas de serviço e conteúdos.",
+          "Consistência de Dados (NAP): As informações (Nome, Endereço e Telefone) devem ser iguais em seu Site, Redes Sociais, Diretórios e Perfil da Empresa."
         ],
         type: "rules"
+      },
+      {
+        title: "Backlinks Locais",
+        subtitle: "Citações que geram autoridade",
+        paragraphs: [
+          "Busque parcerias e citações em:",
+          "• Associações comerciais",
+          "• Portais locais",
+          "• Jornais regionais",
+          "Isso pode fortalecer a autoridade local da sua empresa."
+        ],
+        type: "stats"
       }
     ]
   },
   {
     id: 11,
-    title: "11. Métricas Importantes",
-    tagline: "O que analisar nos relatórios mensais",
-    icon: "📊",
-    color: "#E91E63",
+    title: "11. Site e Perfil Juntos",
+    tagline: "A dupla perfeita",
+    icon: "💻",
+    color: "#673AB7",
     pages: [
       {
-        title: "Dados que Importam",
-        subtitle: "Esqueça métricas de vaidade",
+        title: "O Perfil não substitui um site",
+        subtitle: "A importância do site",
         paragraphs: [
-          "Acompanhe mensalmente as seguintes ações dos clientes para entender o retorno do seu trabalho:",
-          "👁️ Visualizações: Quantas pessoas encontraram seu negócio.",
-          "📞 Ligações: Quantas pessoas ligaram direto do botão do Google.",
-          "🗺️ Pedidos de Rota: Pessoas com real intenção de ir à sua loja."
+          "O Perfil da Empresa é excelente, mas não substitui um site próprio. O ideal é possuir:",
+          "• Página Inicial (Apresentação)",
+          "• Serviços (Detalhamento)",
+          "• Contato (Telefone e localização)",
+          "• Blog (Conteúdo educativo)"
         ],
-        type: "stats"
-      },
-      {
-        title: "Cliques no Site e Avaliações",
-        subtitle: "Interesse e Reputação",
-        paragraphs: [
-          "• Cliques no Site: Mostra que o cliente quer conhecer mais sobre seu portfólio de produtos.",
-          "• Quantidade e Nota de Avaliações: Deve crescer mês a mês. Se as avaliações caírem, ligue o alerta na sua equipe de atendimento!"
-        ],
-        type: "concept"
+        type: "checklist"
       }
     ]
   },
   {
     id: 12,
-    title: "12. Erros que Derrubam Ranking",
-    tagline: "O que nunca fazer no seu perfil",
-    icon: "🚫",
+    title: "12. Google Maps",
+    tagline: "O canal de descoberta",
+    icon: "🗺️",
+    color: "#F44336",
+    pages: [
+      {
+        title: "Objetivos no Maps",
+        subtitle: "Visibilidade em trânsito",
+        paragraphs: [
+          "O Google Maps é o principal canal de descoberta local. Seus objetivos devem ser:",
+          "• Aparecer no pacote local (Local Pack)",
+          "• Aparecer nas buscas por proximidade",
+          "• Gerar mais rotas e visitas"
+        ],
+        type: "concept"
+      },
+      {
+        title: "Como melhorar a presença",
+        subtitle: "Boas práticas",
+        paragraphs: [
+          "Para se destacar no Maps, mantenha:",
+          "• Perfil completo",
+          "• Avaliações frequentes",
+          "• Fotos atualizadas",
+          "• Site otimizado",
+          "• Informações consistentes"
+        ],
+        type: "checklist"
+      }
+    ]
+  },
+  {
+    id: 13,
+    title: "13. Google Ads",
+    tagline: "Anúncios para negócios locais",
+    icon: "🚀",
+    color: "#1976D2",
+    pages: [
+      {
+        title: "Quando usar",
+        subtitle: "Aceleração de resultados",
+        paragraphs: [
+          "Use Google Ads quando deseja acelerar resultados imediatos.",
+          "Campanha de Pesquisa: Aparece quando o cliente procura diretamente pelo serviço (Ex: 'Advogado trabalhista')."
+        ],
+        type: "concept"
+      },
+      {
+        title: "Performance Max & Extensões",
+        subtitle: "O poder do ecossistema Google",
+        paragraphs: [
+          "A campanha Performance Max (PMax) pode exibir anúncios em Pesquisa, Maps, YouTube, Gmail e Display simultaneamente.",
+          "Utilize Extensões de Local para permitir o destaque das informações físicas da sua empresa direto nos anúncios."
+        ],
+        type: "stats"
+      }
+    ]
+  },
+  {
+    id: 14,
+    title: "14. Métricas e Análise",
+    tagline: "Tome decisões com base em dados",
+    icon: "📊",
+    color: "#009688",
+    pages: [
+      {
+        title: "O que o painel fornece",
+        subtitle: "Os números que importam",
+        paragraphs: [
+          "O Perfil da Empresa fornece métricas vitais sobre o comportamento do cliente:",
+          "• Pesquisas (Como encontraram você)",
+          "• Cliques (Interações no perfil)",
+          "• Ligações (Chamadas geradas a partir do botão)",
+          "• Rotas (Solicitações de direção ao local)",
+          "• Visualizações de Fotos (Interesse visual)",
+          "Esses dados permitem a comparação com o mercado local."
+        ],
+        type: "stats"
+      }
+    ]
+  },
+  {
+    id: 15,
+    title: "15. Principais Erros",
+    tagline: "O que evitar a todo custo",
+    icon: "❌",
     color: "#D32F2F",
     pages: [
       {
-        title: "Lista de Proibições",
-        subtitle: "Ações passíveis de punição",
+        title: "Lista de Erros Críticos",
+        subtitle: "Não cometa essas falhas",
         paragraphs: [
-          "O Google monitora comportamentos suspeitos. Evite a todo custo:",
-          "❌ Comprar avaliações falsas em sites paralelos.",
-          "❌ Inserir slogans ou serviços no nome oficial da empresa.",
-          "❌ Abandonar o perfil sem atualizações ou postagens.",
-          "❌ Fornecer endereço incorreto ou usar endereços falsos apenas para fingir proximidade."
-        ],
-        type: "rules"
-      },
-      {
-        title: "Erros Operacionais",
-        subtitle: "Negligências que custam clientes",
-        paragraphs: [
-          "❌ Deixar avaliações críticas sem nenhuma resposta.",
-          "❌ Manter horários desatualizados (fazer o cliente dar viagem perdida).",
-          "❌ Criar perfis duplicados para a mesma empresa (gera suspensão em ambos)."
+          "❌ Perfil incompleto ou Categoria incorreta",
+          "❌ Horários desatualizados",
+          "❌ Avaliações falsas",
+          "❌ Site lento ou Fotos antigas",
+          "❌ Ignorar avaliações",
+          "❌ Informações inconsistentes (NAP divergente)",
+          "❌ Perfis duplicados (gera confusão e risco de suspensão)"
         ],
         type: "rules"
       }
     ]
   },
   {
-    id: 13,
-    title: "13. Estratégia de 30 Dias",
-    tagline: "Seu plano de ação passo a passo",
-    icon: "📅",
-    color: "#4CAF50",
+    id: 16,
+    title: "16. Estratégia de Ranqueamento",
+    tagline: "Plano de ação completo",
+    icon: "🏆",
+    color: "#FFC107",
     pages: [
       {
-        title: "Semana 1 & 2",
-        subtitle: "Fase de Fundação e Ativação",
+        title: "Fases 1 e 2",
+        subtitle: "Fundação e Autoridade",
         paragraphs: [
-          "📅 SEMANA 1 (Preenchimento): Complete todas as lacunas do perfil, suba ao menos 20 fotos ótimas, cadastre todos os serviços e os principais produtos.",
-          "📅 SEMANA 2 (Reputação): Consiga as primeiras 10 avaliações de clientes fiéis, responda todos os comentários antigos e crie 3 postagens iniciais."
+          "FASE 1 (Fundação): Perfil verificado, Configuração completa, Categorias corretas.",
+          "FASE 2 (Autoridade): Avaliações contínuas, Respostas constantes, Atualização de fotos frequente."
         ],
         type: "checklist"
       },
       {
-        title: "Semana 3 & 4",
-        subtitle: "Fase de Escala e Análise",
+        title: "Fases 3 e 4",
+        subtitle: "Relevância e Crescimento",
         paragraphs: [
-          "📅 SEMANA 3 (Interação): Crie o FAQ de perguntas frequentes, suba novas fotos dos bastidores e publique a sua primeira grande oferta promocional.",
-          "📅 SEMANA 4 (Tração): Inicie suas primeiras campanhas de Google Ads local, analise as métricas do painel e reforce os pedidos de novas avaliações."
+          "FASE 3 (Relevância): Otimização de SEO Local, Conteúdo de valor no site, Páginas de serviço detalhadas.",
+          "FASE 4 (Crescimento): Integração com Google Ads, Campanhas sazonais e Monitoramento contínuo de métricas."
         ],
         type: "checklist"
       }
@@ -458,17 +513,17 @@ export const COURSE_MODULES: Module[] = [
 ];
 
 export const GOLD_CHECKLIST_ITEMS = [
-  "Perfil verificado pelo Google",
-  "Categoria principal e secundárias configuradas",
-  "Todos os serviços cadastrados individualmente",
-  "Vitrine de produtos ativa com fotos e preços",
-  "Site estruturado e conectado ao perfil",
-  "Botão de WhatsApp atualizado",
-  "Mais de 100 fotos cadastradas no total",
-  "Postagens sendo feitas semanalmente",
-  "Fluxo de avaliações constantes de clientes",
-  "Respostas dadas em 100% das avaliações recebidas",
-  "Estratégia de SEO local aplicada",
-  "Anúncios ativos no Google Ads",
-  "Informações cadastrais sempre atualizadas"
+  "Perfil: Verificado e com Categoria Correta",
+  "Perfil: Telefone, Site e Horários atualizados",
+  "Conteúdo: Fotos profissionais, Vídeos e Serviços/Produtos cadastrados",
+  "Conteúdo: Postagens frequentes",
+  "Reputação: Avaliações constantes e Nota elevada",
+  "Reputação: Respostas rápidas",
+  "SEO Local: Site otimizado e Dados consistentes",
+  "SEO Local: Presença em diretórios e Backlinks locais",
+  "Tráfego Pago: Google Ads configurado e campanhas locais",
+  "Tráfego Pago: Conversões monitoradas",
+  "Gestão Semanal: Novas fotos, respostas a avaliações, métricas e promoções",
+  "Gestão Mensal: Revisão de categorias, serviços e concorrentes",
+  "Gestão Trimestral: Auditoria completa e planejamento estratégico"
 ];

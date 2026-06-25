@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, Calendar, MessageSquareText, TrendingUp, ArrowRight, QrCode, Sparkles, CheckCircle2, Store } from "lucide-react";
+import { Shield, Calendar, MessageSquareText, TrendingUp, ArrowRight, QrCode, Sparkles, CheckCircle2, Store, RefreshCw } from "lucide-react";
 import { Link } from "react-router";
 import { auth, db, signInWithPopup } from "../lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -95,9 +95,28 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Header Info */}
-      <div className="text-center md:text-left py-4">
+      <div className="py-4">
+        {gmbConnected && (
+          <div className="inline-flex items-center gap-2 bg-teal-50 text-teal-700 px-3 py-1.5 rounded-full mb-4 border border-teal-100 shadow-sm">
+            <Store size={14} className="text-teal-600" />
+            <span className="text-xs font-bold tracking-wide uppercase">
+              {businessData?.title || "Empresa Conectada"}
+            </span>
+            <CheckCircle2 size={14} className="text-teal-500 ml-1" />
+            <button 
+              onClick={handleConnectGMB}
+              disabled={isConnecting}
+              className="ml-2 text-teal-600/70 hover:text-teal-900 transition-colors"
+              title="Atualizar dados"
+            >
+              <RefreshCw size={12} className={isConnecting ? "animate-spin" : ""} />
+            </button>
+          </div>
+        )}
         <h2 className="text-sm font-semibold tracking-widest text-gray-500 uppercase mb-1">Visão Geral</h2>
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Bem-vindo, {user?.displayName ? user.displayName.split(' ')[0] : 'ao LocalPulse'}.</h1>
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+          Bem-vindo, {user?.displayName ? user.displayName.split(' ')[0] : 'ao LocalPulse'}.
+        </h1>
       </div>
 
       {/* Feature Pills (Horizontal Scroll on Mobile) */}
@@ -118,60 +137,29 @@ export default function Dashboard() {
         })}
       </div>
 
-      {/* Connection Card */}
-      <div className="bg-gradient-to-r from-teal-500 to-purple-600 text-white rounded-3xl p-6 shadow-md relative overflow-hidden flex flex-col items-start gap-4">
-        <div className="relative z-10 w-full">
-          <h2 className="text-2xl font-bold mb-2">
-            {gmbConnected ? "Conta Google Meu Negócio Conectada" : "Conecte sua conta do Google Meu Negócio"}
-          </h2>
-          <p className="text-blue-50 max-w-lg mb-4">
-            {gmbConnected
-              ? "Seus dados estão sendo sincronizados. O QR Code e o Diagnóstico de Reputação já estão utilizando suas informações reais."
-              : "Para ver seus dados reais, histórico de avaliações e obter um diagnóstico verdadeiro usando Inteligência Artificial, precisamos que você conecte o Perfil da sua Empresa."}
-          </p>
-          
-          {gmbConnected && businessData && (
-            <div className="bg-white/10 rounded-2xl p-4 mb-4 border border-white/20 backdrop-blur-md">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-xl">
-                  <Store size={24} className="text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg">{businessData.title || "Sua Empresa"}</h3>
-                  {businessData.profile?.description && (
-                    <p className="text-teal-50 text-sm line-clamp-1">{businessData.profile.description}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {!gmbConnected ? (
+      {/* Connection Card (Only show if NOT connected) */}
+      {!gmbConnected && (
+        <div className="bg-gradient-to-r from-teal-500 to-purple-600 text-white rounded-3xl p-6 shadow-md relative overflow-hidden flex flex-col items-start gap-4">
+          <div className="relative z-10 w-full">
+            <h2 className="text-2xl font-bold mb-2">
+              Conecte sua conta do Perfil da Empresa no Google
+            </h2>
+            <p className="text-blue-50 max-w-lg mb-4">
+              Para ver seus dados reais, histórico de avaliações e obter um diagnóstico verdadeiro usando Inteligência Artificial, precisamos que você conecte o Perfil da sua Empresa.
+            </p>
+            
             <button 
               onClick={handleConnectGMB}
               disabled={isConnecting}
-              className="bg-white text-purple-700 font-bold px-6 py-3 rounded-xl shadow-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="bg-white text-purple-700 font-bold px-6 py-3 rounded-xl shadow-sm hover:bg-gray-50 transition-colors disabled:opacity-50 flex items-center gap-2"
             >
+              <Store size={20} />
               {isConnecting ? "Conectando..." : "Conectar Conta Google"}
             </button>
-          ) : (
-            <div className="flex gap-4 items-center flex-wrap">
-              <div className="flex items-center gap-2 bg-white/20 text-white font-bold px-4 py-2 rounded-xl backdrop-blur-sm">
-                <CheckCircle2 size={20} className="text-teal-300" />
-                Sincronizado
-              </div>
-              <button 
-                onClick={handleConnectGMB}
-                disabled={isConnecting}
-                className="text-white/80 hover:text-white text-sm underline underline-offset-2 transition-colors disabled:opacity-50"
-              >
-                {isConnecting ? "Atualizando..." : "Atualizar Dados"}
-              </button>
-            </div>
-          )}
+          </div>
+          <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
         </div>
-        <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
-      </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Quick Actions */}
