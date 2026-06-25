@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { COURSE_MODULES, GOLD_CHECKLIST_ITEMS, Module } from '../data/curso';
-import { ArrowLeft, CheckCircle2, ChevronRight, Trophy, Sparkles, BookOpen, ChevronLeft } from 'lucide-react';
-import { Link } from 'react-router';
+import { ArrowLeft, CheckCircle2, ChevronRight, Sparkles, BookOpen, ChevronLeft } from 'lucide-react';
 
 export default function DicasPro() {
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);

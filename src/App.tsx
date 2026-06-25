@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HashRouter as Router, Routes, Route, Link, useLocation } from "react-router";
 import { Home, Sparkles, QrCode, LogOut, Settings, GraduationCap } from "lucide-react";
 import Dashboard from "./pages/Dashboard";
@@ -6,8 +6,9 @@ import Diagnosis from "./pages/Diagnosis";
 import QrCodeView from "./pages/QrCodeView";
 import DicasPro from "./pages/DicasPro";
 import Login from "./pages/Login";
+import { auth, onAuthStateChanged, signOut } from "./lib/firebase";
 
-function Layout({ children, onLogout }: { children: React.ReactNode, onLogout: () => void }) {
+function Layout({ children, onLogout, userPhoto }: { children: React.ReactNode, onLogout: () => void, userPhoto: string | null }) {
   const location = useLocation();
 
   const navItems = [
@@ -75,7 +76,11 @@ function Layout({ children, onLogout }: { children: React.ReactNode, onLogout: (
             <h1 className="text-xl font-bold tracking-tight">LocalPulse</h1>
           </div>
           <button onClick={onLogout} className="p-2 text-red-600 bg-red-50 rounded-full flex items-center gap-2">
-            <LogOut size={16} />
+            {userPhoto ? (
+               <img src={userPhoto} alt="Perfil" className="w-6 h-6 rounded-full" referrerPolicy="no-referrer" />
+            ) : (
+               <LogOut size={16} />
+            )}
             <span className="text-xs font-bold">Sair</span>
           </button>
         </header>
@@ -109,27 +114,44 @@ function Layout({ children, onLogout }: { children: React.ReactNode, onLogout: (
 }
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('isAuthenticated') === 'true';
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [userPhoto, setUserPhoto] = useState<string | null>(null);
 
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-    localStorage.setItem('isAuthenticated', 'true');
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsAuthenticated(true);
+        setUserPhoto(user.photoURL);
+      } else {
+        setIsAuthenticated(false);
+        setUserPhoto(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await signOut(auth);
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('isAuthenticated');
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} />;
+    return <Login />;
   }
 
   return (
     <Router>
-      <Layout onLogout={handleLogout}>
+      <Layout onLogout={handleLogout} userPhoto={userPhoto}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/diagnosis" element={<Diagnosis />} />

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Sparkles, ArrowLeft, RefreshCw, CheckCircle2, AlertTriangle, Target } from "lucide-react";
+import { ArrowLeft, RefreshCw, CheckCircle2, AlertTriangle, Target } from "lucide-react";
 import { Link } from "react-router";
 
 interface Action {

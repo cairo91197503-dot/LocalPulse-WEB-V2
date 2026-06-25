@@ -1,7 +1,10 @@
-import { Shield, Clock, Sparkles, TrendingUp, CheckCircle2, Circle, ArrowRight, Info, QrCode } from "lucide-react";
+import { Shield, Clock, Sparkles, TrendingUp, ArrowRight, QrCode } from "lucide-react";
 import { Link } from "react-router";
+import { auth } from "../lib/firebase";
 
 export default function Dashboard() {
+  const user = auth.currentUser;
+
   const features = [
     { icon: Shield, title: "REPUTAÇÃO", desc: "Fortaleça sua presença e conquiste confiança." },
     { icon: Clock, title: "HORÁRIOS", desc: "Descubra os melhores horários para postar." },
@@ -14,7 +17,7 @@ export default function Dashboard() {
       {/* Header Info */}
       <div className="text-center md:text-left py-4">
         <h2 className="text-sm font-semibold tracking-widest text-gray-500 uppercase mb-1">Visão Geral</h2>
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Bem-vindo ao LocalPulse.</h1>
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Bem-vindo, {user?.displayName ? user.displayName.split(' ')[0] : 'ao LocalPulse'}.</h1>
       </div>
 
       {/* Feature Pills (Horizontal Scroll on Mobile) */}
@@ -58,7 +61,7 @@ export default function Dashboard() {
             </div>
             <div className="flex-1">
               <h3 className="font-bold text-indigo-900 text-sm">Diagnóstico com IA</h3>
-              <p className="text-xs text-indigo-700/70 mt-0.5">Analise sua reputação online (Demonstração)</p>
+              <p className="text-xs text-indigo-700/70 mt-0.5">Analise sua reputação online automaticamente</p>
             </div>
             <ArrowRight size={20} className="text-indigo-400" />
           </Link>
@@ -73,19 +76,6 @@ export default function Dashboard() {
             </div>
             <ArrowRight size={20} className="text-emerald-400" />
           </Link>
-        </div>
-
-        {/* Info Box */}
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 flex flex-col justify-center">
-          <div className="flex items-start gap-3">
-            <Info size={24} className="text-gray-400 mt-1" />
-            <div>
-              <h3 className="font-bold text-gray-900 mb-1">Acesso Demonstração</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">
-                Você está acessando a plataforma em modo de demonstração. Explore as ferramentas disponíveis e acesse o "Curso GMN" para aprender as melhores práticas do Google Meu Negócio.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
