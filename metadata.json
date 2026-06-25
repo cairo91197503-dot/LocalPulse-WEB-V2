@@ -1,0 +1,6 @@
+{
+  "name": "LocalPulse",
+  "description": "A basic restored application.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
