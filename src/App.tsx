@@ -6,7 +6,9 @@ import Diagnosis from "./pages/Diagnosis";
 import QrCodeView from "./pages/QrCodeView";
 import DicasPro from "./pages/DicasPro";
 import Login from "./pages/Login";
-import { auth, onAuthStateChanged, signOut } from "./lib/firebase";
+import Onboarding from "./pages/Onboarding";
+import { auth, onAuthStateChanged, signOut, db } from "./lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 import { Logo, LogoText } from "./components/Logo";
 
@@ -115,15 +117,31 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
+  const [needsOnboarding, setNeedsOnboarding] = useState<boolean>(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setIsAuthenticated(true);
         setUserPhoto(user.photoURL);
+        
+        try {
+          const docRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(docRef);
+          if (!docSnap.exists() || !docSnap.data().hasSeenOnboarding) {
+            setNeedsOnboarding(true);
+          } else {
+            setNeedsOnboarding(false);
+          }
+        } catch (error) {
+          console.error("Error checking onboarding status:", error);
+          // Default to false on error to not block the user
+          setNeedsOnboarding(false);
+        }
       } else {
         setIsAuthenticated(false);
         setUserPhoto(null);
+        setNeedsOnboarding(false);
       }
       setLoading(false);
     });
@@ -135,16 +153,33 @@ export default function App() {
     await signOut(auth);
   };
 
+  const handleCompleteOnboarding = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        await setDoc(doc(db, "users", user.uid), { hasSeenOnboarding: true }, { merge: true });
+        setNeedsOnboarding(false);
+      } catch (error) {
+        console.error("Error saving onboarding status:", error);
+        setNeedsOnboarding(false);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (!isAuthenticated) {
     return <Login />;
+  }
+
+  if (needsOnboarding) {
+    return <Onboarding onComplete={handleCompleteOnboarding} />;
   }
 
   return (

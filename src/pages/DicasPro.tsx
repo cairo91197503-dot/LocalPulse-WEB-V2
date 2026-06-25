@@ -1,14 +1,27 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router';
 import { COURSE_MODULES, GOLD_CHECKLIST_ITEMS, Module } from '../data/curso';
 import { ArrowLeft, CheckCircle2, ChevronRight, Sparkles, BookOpen, ChevronLeft } from 'lucide-react';
 
 export default function DicasPro() {
+  const location = useLocation();
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
   const [currentPageIndex, setCurrentPageIndex] = useState<number>(0);
   const [completedModules, setCompletedModules] = useState<number[]>([]);
   const [goldChecklist, setGoldChecklist] = useState<boolean[]>(
     new Array(GOLD_CHECKLIST_ITEMS.length).fill(false)
   );
+
+  useEffect(() => {
+    // Check if we need to open a specific module from navigation state
+    if (location.state && location.state.openModuleId) {
+      const mod = COURSE_MODULES.find(m => m.id === location.state.openModuleId);
+      if (mod) {
+        setSelectedModule(mod);
+        setCurrentPageIndex(0);
+      }
+    }
+  }, [location]);
 
   useEffect(() => {
     try {

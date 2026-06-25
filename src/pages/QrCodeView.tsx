@@ -148,7 +148,7 @@ export default function QrCodeView() {
 
         {/* Informações Adicionais linking to Course Module */}
         <div className="w-full max-w-md mt-4 pt-6 border-t border-gray-100">
-          <Link to="/dicas-pro" className="flex items-center justify-center gap-2 w-full py-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-2xl transition-colors">
+          <Link to="/dicas" state={{ openModuleId: 5 }} className="flex items-center justify-center gap-2 w-full py-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-2xl transition-colors">
             <Info size={20} />
             Informações Adicionais (Módulo de Avaliações)
           </Link>
