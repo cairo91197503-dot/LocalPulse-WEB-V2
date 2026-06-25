@@ -19,6 +19,10 @@ async function startServer() {
 
       const { businessData } = req.body;
 
+      console.log("\n--- [GEMINI DIAGNOSIS REQUEST] ---");
+      console.log("Business Data received:", businessData ? "YES" : "NO");
+      if (businessData) console.log("Raw Business Data:", businessData);
+
       const ai = new GoogleGenAI({ apiKey });
       
       let contextStr = "Provide realistic analysis for a standard local cafe.";
@@ -45,15 +49,21 @@ async function startServer() {
       ONLY output valid JSON.
       `;
 
+      console.log("Generated Prompt:\n", prompt);
+
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: prompt,
       });
 
+      console.log("Gemini Raw Response:\n", response.text);
+
       let jsonRaw = response.text || "";
       jsonRaw = jsonRaw.replace(/```json/g, "").replace(/```/g, "").trim();
       
       const diagnosis = JSON.parse(jsonRaw);
+      console.log("Successfully parsed JSON.");
+      console.log("--- [END GEMINI REQUEST] ---\n");
       res.json(diagnosis);
     } catch (error) {
       console.error("Gemini Error:", error);

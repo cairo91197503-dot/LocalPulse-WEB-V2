@@ -32,7 +32,10 @@ export default function Diagnosis() {
       const user = auth.currentUser;
       let businessContext = "";
       
+      console.log("[Diagnosis UI] Iniciando diagnóstico...");
+      
       if (user) {
+        console.log("[Diagnosis UI] Usuário detectado:", user.uid);
         const docRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
@@ -40,17 +43,29 @@ export default function Diagnosis() {
           if (userData.businessData) {
             businessContext = JSON.stringify(userData.businessData);
             setBusinessName(userData.businessData.title || "");
+            console.log("[Diagnosis UI] Dados da empresa encontrados:", userData.businessData);
+          } else {
+            console.log("[Diagnosis UI] Usuário NÃO possui 'businessData' no Firestore.");
           }
         }
       }
+
+      console.log("[Diagnosis UI] Payload a ser enviado para /api/diagnosis:", { businessData: businessContext });
 
       const res = await fetch("/api/diagnosis", { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ businessData: businessContext })
       });
-      if (!res.ok) throw new Error("Failed to fetch diagnosis");
+      
+      console.log("[Diagnosis UI] Status da API /diagnosis:", res.status);
+      
+      if (!res.ok) {
+        console.error("[Diagnosis UI] Erro da API /diagnosis:", res.status, res.statusText);
+        throw new Error("Failed to fetch diagnosis");
+      }
       const json = await res.json();
+      console.log("[Diagnosis UI] Resposta recebida da API (JSON):", json);
       setData(json);
     } catch (err) {
       setError("Não foi possível gerar o diagnóstico. Tente novamente.");
