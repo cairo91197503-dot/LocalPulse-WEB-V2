@@ -1,16 +1,18 @@
 import { useState } from 'react';
-import { Shield, TrendingUp, Sparkles } from 'lucide-react';
-import { signInWithPopup, auth, googleProvider } from '../lib/firebase';
+import { Shield, Sparkles } from 'lucide-react';
+import { signInWithPopup, auth, googleProvider, setPersistence, browserLocalPersistence, browserSessionPersistence } from '../lib/firebase';
 import { Logo, LogoText } from '../components/Logo';
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rememberMe, setRememberMe] = useState(true);
 
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
       setError(null);
+      await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
       await signInWithPopup(auth, googleProvider);
     } catch (err: any) {
       console.error(err);
@@ -59,6 +61,21 @@ export default function Login() {
               <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
               {loading ? 'Conectando...' : 'Entrar com o Google'}
             </button>
+            
+            <div className="flex items-center justify-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 cursor-pointer">
+                Permanecer conectado
+              </label>
+            </div>
+
             {error && (
               <p className="text-red-500 text-sm text-center font-medium">{error}</p>
             )}
