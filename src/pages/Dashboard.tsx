@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, Calendar, MessageSquareText, TrendingUp, ArrowRight, QrCode, Sparkles, CheckCircle2 } from "lucide-react";
+import { Shield, Calendar, MessageSquareText, TrendingUp, ArrowRight, QrCode, Sparkles, CheckCircle2, Store } from "lucide-react";
 import { Link } from "react-router";
 import { auth, db, signInWithPopup } from "../lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -9,6 +9,7 @@ export default function Dashboard() {
   const user = auth.currentUser;
   const [isConnecting, setIsConnecting] = useState(false);
   const [gmbConnected, setGmbConnected] = useState(false);
+  const [businessData, setBusinessData] = useState<any>(null);
 
   useEffect(() => {
     const checkGmb = async () => {
@@ -17,6 +18,7 @@ export default function Dashboard() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists() && docSnap.data().gmbConnected) {
           setGmbConnected(true);
+          setBusinessData(docSnap.data().businessData || null);
         }
       }
     };
@@ -34,6 +36,7 @@ export default function Dashboard() {
       const token = credential?.accessToken;
       
       let reviewUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(user.displayName || 'Minha Empresa')}`;
+      let fetchedLocation = null;
 
       if (token) {
         try {
@@ -44,16 +47,19 @@ export default function Dashboard() {
           const account = accountsData.accounts?.[0];
           
           if (account) {
-            const locationsRes = await fetch(`https://mybusinessbusinessinformation.googleapis.com/v1/${account.name}/locations?readMask=name,metadata`, {
+            const locationsRes = await fetch(`https://mybusinessbusinessinformation.googleapis.com/v1/${account.name}/locations?readMask=name,title,metadata,profile`, {
               headers: { Authorization: `Bearer ${token}` }
             });
             const locationsData = await locationsRes.json();
             const location = locationsData.locations?.[0];
             
-            if (location && location.metadata?.newReviewUri) {
-               reviewUrl = location.metadata.newReviewUri;
-            } else if (location && location.metadata?.mapsUri) {
-               reviewUrl = location.metadata.mapsUri + '/review';
+            if (location) {
+              fetchedLocation = location;
+              if (location.metadata?.newReviewUri) {
+                 reviewUrl = location.metadata.newReviewUri;
+              } else if (location.metadata?.mapsUri) {
+                 reviewUrl = location.metadata.mapsUri + '/review';
+              }
             }
           }
         } catch (apiError) {
@@ -63,10 +69,12 @@ export default function Dashboard() {
 
       await setDoc(doc(db, "users", user.uid), { 
         gmbConnected: true,
-        reviewUrl: reviewUrl 
+        reviewUrl: reviewUrl,
+        businessData: fetchedLocation
       }, { merge: true });
       
       setGmbConnected(true);
+      setBusinessData(fetchedLocation);
     } catch (err: any) {
       console.error(err);
       if (err.code !== 'auth/popup-closed-by-user') {
@@ -112,7 +120,7 @@ export default function Dashboard() {
 
       {/* Connection Card */}
       <div className="bg-gradient-to-r from-teal-500 to-purple-600 text-white rounded-3xl p-6 shadow-md relative overflow-hidden flex flex-col items-start gap-4">
-        <div className="relative z-10">
+        <div className="relative z-10 w-full">
           <h2 className="text-2xl font-bold mb-2">
             {gmbConnected ? "Conta Google Meu Negócio Conectada" : "Conecte sua conta do Google Meu Negócio"}
           </h2>
@@ -121,6 +129,23 @@ export default function Dashboard() {
               ? "Seus dados estão sendo sincronizados. O QR Code e o Diagnóstico de Reputação já estão utilizando suas informações reais."
               : "Para ver seus dados reais, histórico de avaliações e obter um diagnóstico verdadeiro usando Inteligência Artificial, precisamos que você conecte o Perfil da sua Empresa."}
           </p>
+          
+          {gmbConnected && businessData && (
+            <div className="bg-white/10 rounded-2xl p-4 mb-4 border border-white/20 backdrop-blur-md">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-xl">
+                  <Store size={24} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg">{businessData.title || "Sua Empresa"}</h3>
+                  {businessData.profile?.description && (
+                    <p className="text-teal-50 text-sm line-clamp-1">{businessData.profile.description}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {!gmbConnected ? (
             <button 
               onClick={handleConnectGMB}
@@ -130,9 +155,18 @@ export default function Dashboard() {
               {isConnecting ? "Conectando..." : "Conectar Conta Google"}
             </button>
           ) : (
-            <div className="flex items-center gap-2 bg-white/20 text-white font-bold px-4 py-2 rounded-xl backdrop-blur-sm">
-              <CheckCircle2 size={20} className="text-teal-300" />
-              Sincronizado
+            <div className="flex gap-4 items-center flex-wrap">
+              <div className="flex items-center gap-2 bg-white/20 text-white font-bold px-4 py-2 rounded-xl backdrop-blur-sm">
+                <CheckCircle2 size={20} className="text-teal-300" />
+                Sincronizado
+              </div>
+              <button 
+                onClick={handleConnectGMB}
+                disabled={isConnecting}
+                className="text-white/80 hover:text-white text-sm underline underline-offset-2 transition-colors disabled:opacity-50"
+              >
+                {isConnecting ? "Atualizando..." : "Atualizar Dados"}
+              </button>
             </div>
           )}
         </div>

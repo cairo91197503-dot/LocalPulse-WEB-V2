@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, RefreshCw, CheckCircle2, AlertTriangle, Target } from "lucide-react";
+import { ArrowLeft, RefreshCw, CheckCircle2, AlertTriangle, Target, Store } from "lucide-react";
 import { Link } from "react-router";
+import { auth, db } from "../lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 interface Action {
   titulo: string;
@@ -21,12 +23,32 @@ export default function Diagnosis() {
   const [data, setData] = useState<DiagnosisResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [businessName, setBusinessName] = useState("");
 
   const fetchDiagnosis = async () => {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/diagnosis", { method: "POST" });
+      const user = auth.currentUser;
+      let businessContext = "";
+      
+      if (user) {
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          if (userData.businessData) {
+            businessContext = JSON.stringify(userData.businessData);
+            setBusinessName(userData.businessData.title || "");
+          }
+        }
+      }
+
+      const res = await fetch("/api/diagnosis", { 
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessData: businessContext })
+      });
       if (!res.ok) throw new Error("Failed to fetch diagnosis");
       const json = await res.json();
       setData(json);
@@ -63,6 +85,18 @@ export default function Diagnosis() {
         </Link>
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Diagnóstico de Reputação</h1>
       </div>
+
+      {businessName && !loading && (
+        <div className="bg-white border border-gray-100 p-4 rounded-2xl flex items-center gap-3 shadow-sm">
+          <div className="p-2 bg-purple-50 rounded-lg">
+            <Store size={20} className="text-purple-600" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Analisando empresa</p>
+            <p className="text-sm font-bold text-gray-900">{businessName}</p>
+          </div>
+        </div>
+      )}
 
       {loading && (
         <div className="flex flex-col items-center justify-center py-24 space-y-4">

@@ -17,7 +17,18 @@ async function startServer() {
         return res.status(500).json({ error: "GEMINI_API_KEY is not configured on the server." });
       }
 
+      const { businessData } = req.body;
+
       const ai = new GoogleGenAI({ apiKey });
+      
+      let contextStr = "Provide realistic analysis for a standard local cafe.";
+      if (businessData) {
+         contextStr = `Analyze the following real data from a local business and provide a highly personalized diagnosis:
+         Data: ${businessData}
+         
+         Be extremely specific to their business name, category, and available details. Use this real data to inform your points and priorities.`;
+      }
+
       const prompt = `
       You are an expert digital marketing consultant analyzing the online reputation of a local business.
       Return your analysis as a JSON object with the following structure:
@@ -29,7 +40,9 @@ async function startServer() {
         "pontos_negativos": array of strings,
         "acoes_prioritarias": array of objects { "titulo": string, "descricao": string, "impacto": "Alto"|"Médio"|"Baixo" }
       }
-      Provide realistic analysis for a standard local cafe. ONLY output valid JSON.
+      
+      ${contextStr}
+      ONLY output valid JSON.
       `;
 
       const response = await ai.models.generateContent({
