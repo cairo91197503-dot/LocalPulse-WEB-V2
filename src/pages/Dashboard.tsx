@@ -67,9 +67,11 @@ export default function Dashboard() {
       }, { merge: true });
       
       setGmbConnected(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Erro ao conectar com Google Meu Negócio. Certifique-se de autorizar as permissões necessárias.");
+      if (err.code !== 'auth/popup-closed-by-user') {
+        alert("Erro ao conectar: O Google bloqueou o acesso pois o app está em fase de testes. Para resolver, acesse o Google Cloud Console > APIs e Serviços > Tela de consentimento OAuth e adicione seu e-mail na lista de 'Usuários de teste'.");
+      }
     } finally {
       setIsConnecting(false);
     }
