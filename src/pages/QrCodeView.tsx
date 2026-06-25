@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { QRCodeSVG } from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 import { ArrowLeft, Download, Info, Check, Link as LinkIcon, RefreshCw } from "lucide-react";
 import { Link } from "react-router";
 import { auth, db } from "../lib/firebase";
@@ -112,7 +112,7 @@ export default function QrCodeView() {
           <>
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-6 inline-block">
               {/* To allow downloading via canvas, we can use qrcode.react with canvas rendering */}
-              <QRCodeSVG 
+              <QRCodeCanvas 
                 id="qr-gen"
                 value={businessUrl}
                 size={240}

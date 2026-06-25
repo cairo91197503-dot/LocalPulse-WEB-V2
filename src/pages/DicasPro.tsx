@@ -19,6 +19,7 @@ export default function DicasPro() {
       if (mod) {
         setSelectedModule(mod);
         setCurrentPageIndex(0);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
   }, [location]);
