@@ -131,6 +131,33 @@ export default function QrCodeView() {
                   {saving ? 'Salvando...' : 'Gerar QR Code'}
                 </button>
               </div>
+
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">Ainda não conectou seu Perfil?</h3>
+                <div className="flex flex-col gap-2">
+                  <Link 
+                    to="/"
+                    className="text-sm text-teal-700 font-medium hover:text-teal-800 transition-colors bg-teal-50 hover:bg-teal-100 py-2.5 px-4 rounded-xl flex justify-center"
+                  >
+                    Conectar na Tela Inicial
+                  </Link>
+                  <Link 
+                    to="/dicas"
+                    state={{ openModuleId: 3 }}
+                    className="text-sm text-gray-600 font-medium hover:text-gray-900 transition-colors bg-white border border-gray-200 hover:bg-gray-50 py-2.5 px-4 rounded-xl flex justify-center"
+                  >
+                    Ver Instruções
+                  </Link>
+                  <a 
+                    href="https://www.google.com/business/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-700 font-medium hover:text-blue-800 transition-colors bg-blue-50 hover:bg-blue-100 py-2.5 px-4 rounded-xl flex justify-center"
+                  >
+                    Criar Perfil no Google
+                  </a>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="flex flex-col items-center w-full">

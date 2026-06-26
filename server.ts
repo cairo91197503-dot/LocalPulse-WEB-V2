@@ -25,12 +25,14 @@ async function startServer() {
 
       const ai = new GoogleGenAI({ apiKey });
       
-      let contextStr = "Provide realistic analysis for a standard local cafe.";
+      let contextStr = "";
       if (businessData) {
          contextStr = `Analyze the following real data from a local business and provide a highly personalized diagnosis:
          Data: ${businessData}
          
          Be extremely specific to their business name, category, and available details. Use this real data to inform your points and priorities.`;
+      } else {
+         return res.status(400).json({ error: "Conecte sua empresa para gerar um diagnóstico real." });
       }
 
       const prompt = `

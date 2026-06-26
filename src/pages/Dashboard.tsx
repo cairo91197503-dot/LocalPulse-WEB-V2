@@ -96,23 +96,6 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* Header Info */}
       <div className="py-4">
-        {gmbConnected && (
-          <div className="inline-flex items-center gap-2 bg-teal-50 text-teal-700 px-3 py-1.5 rounded-full mb-4 border border-teal-100 shadow-sm">
-            <Store size={14} className="text-teal-600" />
-            <span className="text-xs font-bold tracking-wide uppercase">
-              {businessData?.title || "Empresa Conectada"}
-            </span>
-            <CheckCircle2 size={14} className="text-teal-500 ml-1" />
-            <button 
-              onClick={handleConnectGMB}
-              disabled={isConnecting}
-              className="ml-2 text-teal-600/70 hover:text-teal-900 transition-colors"
-              title="Atualizar dados"
-            >
-              <RefreshCw size={12} className={isConnecting ? "animate-spin" : ""} />
-            </button>
-          </div>
-        )}
         <h2 className="text-sm font-semibold tracking-widest text-gray-500 uppercase mb-1">Visão Geral</h2>
         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
           Bem-vindo, {user?.displayName ? user.displayName.split(' ')[0] : 'ao LocalPulse'}.
@@ -148,14 +131,33 @@ export default function Dashboard() {
               Para ver seus dados reais, histórico de avaliações e obter um diagnóstico verdadeiro usando Inteligência Artificial, precisamos que você conecte o Perfil da sua Empresa.
             </p>
             
-            <button 
-              onClick={handleConnectGMB}
-              disabled={isConnecting}
-              className="bg-white text-purple-700 font-bold px-6 py-3 rounded-xl shadow-sm hover:bg-gray-50 transition-colors disabled:opacity-50 flex items-center gap-2"
-            >
-              <Store size={20} />
-              {isConnecting ? "Conectando..." : "Conectar Conta Google"}
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button 
+                onClick={handleConnectGMB}
+                disabled={isConnecting}
+                className="bg-white text-purple-700 font-bold px-6 py-3 rounded-xl shadow-sm hover:bg-gray-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                <Store size={20} />
+                {isConnecting ? "Conectando..." : "Conectar Conta Google"}
+              </button>
+              
+              <Link 
+                to="/dicas" 
+                state={{ openModuleId: 3 }}
+                className="bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-6 rounded-xl border border-white/30 transition-colors flex items-center justify-center text-center"
+              >
+                Ver Instruções
+              </Link>
+
+              <a 
+                href="https://www.google.com/business/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl border border-blue-500 transition-colors flex items-center justify-center text-center"
+              >
+                Criar Perfil
+              </a>
+            </div>
           </div>
           <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
         </div>

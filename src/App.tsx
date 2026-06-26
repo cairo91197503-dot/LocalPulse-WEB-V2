@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { HashRouter as Router, Routes, Route, Link, useLocation } from "react-router";
-import { Home, Sparkles, QrCode, LogOut, Settings, GraduationCap } from "lucide-react";
+import { Home, Sparkles, QrCode, LogOut, Settings, GraduationCap, CheckCircle2, Store } from "lucide-react";
 import Dashboard from "./pages/Dashboard";
 import Diagnosis from "./pages/Diagnosis";
 import QrCodeView from "./pages/QrCodeView";
@@ -8,11 +8,11 @@ import DicasPro from "./pages/DicasPro";
 import Login from "./pages/Login";
 import Onboarding from "./pages/Onboarding";
 import { auth, onAuthStateChanged, signOut, db } from "./lib/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
 
 import { Logo, LogoText } from "./components/Logo";
 
-function Layout({ children, onLogout, userPhoto }: { children: React.ReactNode, onLogout: () => void, userPhoto: string | null }) {
+function Layout({ children, onLogout, userPhoto, gmbConnected }: { children: React.ReactNode, onLogout: () => void, userPhoto: string | null, gmbConnected: boolean }) {
   const location = useLocation();
 
   const navItems = [
@@ -26,9 +26,11 @@ function Layout({ children, onLogout, userPhoto }: { children: React.ReactNode, 
     <div className="flex h-screen bg-gray-50 text-gray-900">
       {/* Sidebar for Desktop */}
       <aside className="hidden md:flex w-64 flex-col bg-white border-r border-gray-200">
-        <div className="p-6 border-b border-gray-200 flex items-center gap-3">
-          <Logo className="w-10 h-10" />
-          <LogoText className="text-2xl font-bold tracking-tight" />
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Logo className="w-10 h-10" />
+            <LogoText className="text-2xl font-bold tracking-tight" />
+          </div>
         </div>
         
         <nav className="flex-1 p-4 space-y-2">
@@ -53,6 +55,14 @@ function Layout({ children, onLogout, userPhoto }: { children: React.ReactNode, 
         </nav>
         
         <div className="p-4 border-t border-gray-200">
+          <div className="flex items-center justify-between mb-2 px-4 py-2">
+            {gmbConnected && (
+              <div className="flex items-center gap-1.5 text-teal-600 bg-teal-50 px-3 py-1.5 rounded-full border border-teal-100" title="Perfil da Empresa Conectado">
+                <Store size={16} />
+                <CheckCircle2 size={16} />
+              </div>
+            )}
+          </div>
           <button className="flex items-center gap-3 px-4 py-3 w-full text-left rounded-xl text-gray-600 hover:bg-gray-100 transition-colors">
             <Settings size={20} className="text-gray-400" />
             Configurações
@@ -75,14 +85,22 @@ function Layout({ children, onLogout, userPhoto }: { children: React.ReactNode, 
             <Logo className="w-8 h-8" />
             <LogoText className="text-xl font-bold tracking-tight" />
           </div>
-          <button onClick={onLogout} className="p-2 text-red-600 bg-red-50 rounded-full flex items-center gap-2">
-            {userPhoto ? (
-               <img src={userPhoto} alt="Perfil" className="w-6 h-6 rounded-full" referrerPolicy="no-referrer" />
-            ) : (
-               <LogOut size={16} />
+          <div className="flex items-center gap-3">
+            {gmbConnected && (
+              <div className="flex items-center gap-1.5 text-teal-600 bg-teal-50 px-2.5 py-1.5 rounded-full border border-teal-100" title="Perfil da Empresa Conectado">
+                <Store size={16} />
+                <CheckCircle2 size={16} />
+              </div>
             )}
-            <span className="text-xs font-bold">Sair</span>
-          </button>
+            <button onClick={onLogout} className="p-2 text-red-600 bg-red-50 rounded-full flex items-center gap-2">
+              {userPhoto ? (
+                 <img src={userPhoto} alt="Perfil" className="w-6 h-6 rounded-full" referrerPolicy="no-referrer" />
+              ) : (
+                 <LogOut size={16} />
+              )}
+              <span className="text-xs font-bold">Sair</span>
+            </button>
+          </div>
         </header>
 
         <div className="p-4 md:p-8 max-w-5xl mx-auto pb-24 md:pb-8">
@@ -118,8 +136,11 @@ export default function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean>(false);
+  const [gmbConnected, setGmbConnected] = useState<boolean>(false);
 
   useEffect(() => {
+    let snapshotUnsubscribe: (() => void) | undefined;
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setIsAuthenticated(true);
@@ -127,12 +148,19 @@ export default function App() {
         
         try {
           const docRef = doc(db, "users", user.uid);
-          const docSnap = await getDoc(docRef);
-          if (!docSnap.exists() || !docSnap.data().hasSeenOnboarding) {
-            setNeedsOnboarding(true);
-          } else {
-            setNeedsOnboarding(false);
-          }
+          
+          snapshotUnsubscribe = onSnapshot(docRef, (docSnap) => {
+            if (!docSnap.exists() || !docSnap.data().hasSeenOnboarding) {
+              setNeedsOnboarding(true);
+            } else {
+              setNeedsOnboarding(false);
+            }
+            if (docSnap.exists() && docSnap.data().gmbConnected) {
+              setGmbConnected(true);
+            } else {
+              setGmbConnected(false);
+            }
+          });
         } catch (error) {
           console.error("Error checking onboarding status:", error);
           // Default to false on error to not block the user
@@ -142,11 +170,20 @@ export default function App() {
         setIsAuthenticated(false);
         setUserPhoto(null);
         setNeedsOnboarding(false);
+        setGmbConnected(false);
+        if (snapshotUnsubscribe) {
+          snapshotUnsubscribe();
+        }
       }
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (snapshotUnsubscribe) {
+        snapshotUnsubscribe();
+      }
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -184,7 +221,7 @@ export default function App() {
 
   return (
     <Router>
-      <Layout onLogout={handleLogout} userPhoto={userPhoto}>
+      <Layout onLogout={handleLogout} userPhoto={userPhoto} gmbConnected={gmbConnected}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/diagnosis" element={<Diagnosis />} />
@@ -195,3 +232,4 @@ export default function App() {
     </Router>
   );
 }
+

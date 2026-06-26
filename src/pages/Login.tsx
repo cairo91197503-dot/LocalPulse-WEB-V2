@@ -79,6 +79,17 @@ export default function Login() {
             {error && (
               <p className="text-red-500 text-sm text-center font-medium">{error}</p>
             )}
+
+            <div className="mt-6 text-center text-sm text-gray-600">
+              Não tem uma conta?{' '}
+              <button 
+                onClick={handleGoogleLogin}
+                disabled={loading}
+                className="font-bold text-blue-600 hover:text-blue-500 transition-colors disabled:opacity-50"
+              >
+                Criar conta
+              </button>
+            </div>
           </div>
         </div>
       </div>

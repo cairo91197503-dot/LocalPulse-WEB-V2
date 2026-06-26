@@ -50,6 +50,11 @@ export default function Diagnosis() {
         }
       }
 
+      if (!businessContext) {
+        setLoading(false);
+        return; // Don't call the API if not connected
+      }
+
       console.log("[Diagnosis UI] Payload a ser enviado para /api/diagnosis:", { businessData: businessContext });
 
       const res = await fetch("/api/diagnosis", { 
@@ -119,6 +124,42 @@ export default function Diagnosis() {
             <RefreshCw size={32} />
           </div>
           <p className="text-gray-500 font-medium">Analisando sua presença online...</p>
+        </div>
+      )}
+
+      {!loading && !businessName && !data && !error && (
+        <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm text-center animate-in fade-in slide-in-from-bottom-4">
+          <div className="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Store size={28} className="text-purple-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-3">Conecte sua Empresa</h2>
+          <p className="text-gray-500 mb-8 max-w-md mx-auto">
+            Para gerar um diagnóstico preciso utilizando Inteligência Artificial, você precisa conectar o Perfil da Empresa no Google.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link 
+              to="/"
+              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 px-6 rounded-xl transition-colors"
+            >
+              Conectar no Início
+            </Link>
+            <Link 
+              to="/dicas" 
+              state={{ openModuleId: 3 }}
+              className="bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold py-3.5 px-6 rounded-xl border border-gray-200 transition-colors"
+            >
+              Ver Instruções
+            </Link>
+            <a 
+              href="https://www.google.com/business/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold py-3.5 px-6 rounded-xl border border-blue-200 transition-colors"
+            >
+              Criar Perfil
+            </a>
+          </div>
         </div>
       )}
 
