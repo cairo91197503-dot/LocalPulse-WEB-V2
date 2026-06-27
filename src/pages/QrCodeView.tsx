@@ -9,6 +9,7 @@ export default function QrCodeView() {
   const [businessUrl, setBusinessUrl] = useState<string>("");
   const [inputUrl, setInputUrl] = useState<string>("");
   const [businessName, setBusinessName] = useState<string>("");
+  const [gmbConnected, setGmbConnected] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const user = auth.currentUser;
@@ -21,6 +22,7 @@ export default function QrCodeView() {
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             const data = docSnap.data();
+            setGmbConnected(!!data.gmbConnected);
             if (data.reviewUrl) {
               setBusinessUrl(data.reviewUrl);
               setInputUrl(data.reviewUrl);
@@ -105,7 +107,30 @@ export default function QrCodeView() {
             Deixe o QR Code visível no seu balcão ou nas mesas. Facilite para seus clientes deixarem uma avaliação 5 estrelas em segundos.
           </p>
 
-          {!businessUrl ? (
+          {!gmbConnected ? (
+            <div className="w-full max-w-md bg-gray-50/50 p-8 rounded-3xl border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Conecte sua conta primeiro</h3>
+              <p className="text-sm text-gray-600 mb-6">
+                Para gerar o QR Code de avaliações, precisamos que você conecte o seu Perfil da Empresa no Google.
+              </p>
+              <div className="flex flex-col gap-3">
+                <Link 
+                  to="/"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3.5 px-6 rounded-xl transition-colors flex justify-center text-sm"
+                >
+                  Conectar na Tela Inicial
+                </Link>
+                <a 
+                  href="https://www.google.com/business/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium py-3.5 px-6 rounded-xl transition-colors flex justify-center text-sm"
+                >
+                  Criar Perfil no Google
+                </a>
+              </div>
+            </div>
+          ) : !businessUrl ? (
             <div className="w-full max-w-md bg-gray-50/50 p-8 rounded-3xl border border-gray-100">
               <label className="block text-sm font-semibold text-gray-700 mb-3 text-left">
                 Seu Link de Avaliações do Google
@@ -130,33 +155,6 @@ export default function QrCodeView() {
                 >
                   {saving ? 'Salvando...' : 'Gerar QR Code'}
                 </button>
-              </div>
-
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">Ainda não conectou seu Perfil?</h3>
-                <div className="flex flex-col gap-2">
-                  <Link 
-                    to="/"
-                    className="text-sm text-teal-700 font-medium hover:text-teal-800 transition-colors bg-teal-50 hover:bg-teal-100 py-2.5 px-4 rounded-xl flex justify-center"
-                  >
-                    Conectar na Tela Inicial
-                  </Link>
-                  <Link 
-                    to="/dicas"
-                    state={{ openModuleId: 3 }}
-                    className="text-sm text-gray-600 font-medium hover:text-gray-900 transition-colors bg-white border border-gray-200 hover:bg-gray-50 py-2.5 px-4 rounded-xl flex justify-center"
-                  >
-                    Ver Instruções
-                  </Link>
-                  <a 
-                    href="https://www.google.com/business/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-700 font-medium hover:text-blue-800 transition-colors bg-blue-50 hover:bg-blue-100 py-2.5 px-4 rounded-xl flex justify-center"
-                  >
-                    Criar Perfil no Google
-                  </a>
-                </div>
               </div>
             </div>
           ) : (

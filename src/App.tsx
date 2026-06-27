@@ -5,10 +5,11 @@ import Dashboard from "./pages/Dashboard";
 import Diagnosis from "./pages/Diagnosis";
 import QrCodeView from "./pages/QrCodeView";
 import DicasPro from "./pages/DicasPro";
+import Conexao from "./pages/Conexao";
 import Login from "./pages/Login";
 import Onboarding from "./pages/Onboarding";
 import { auth, onAuthStateChanged, signOut, db } from "./lib/firebase";
-import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
+import { doc, setDoc, onSnapshot } from "firebase/firestore";
 
 import { Logo, LogoText } from "./components/Logo";
 
@@ -19,7 +20,8 @@ function Layout({ children, onLogout, userPhoto, gmbConnected }: { children: Rea
     { path: "/", label: "Início", icon: Home },
     { path: "/diagnosis", label: "Diagnóstico IA", icon: Sparkles },
     { path: "/qrcode", label: "QR Code", icon: QrCode },
-    { path: "/dicas", label: "Curso do Perfil", icon: GraduationCap },
+    { path: "/dicas", label: "Dicas Pro", icon: GraduationCap },
+    { path: "/conexao", label: "Conexão", icon: Store },
   ];
 
   return (
@@ -227,6 +229,7 @@ export default function App() {
           <Route path="/diagnosis" element={<Diagnosis />} />
           <Route path="/qrcode" element={<QrCodeView />} />
           <Route path="/dicas" element={<DicasPro />} />
+          <Route path="/conexao" element={<Conexao />} />
         </Routes>
       </Layout>
     </Router>
