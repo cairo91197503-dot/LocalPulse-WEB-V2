@@ -8,13 +8,25 @@ import DicasPro from "./pages/DicasPro";
 import Conexao from "./pages/Conexao";
 import Login from "./pages/Login";
 import Onboarding from "./pages/Onboarding";
-import { auth, onAuthStateChanged, signOut, db } from "./lib/firebase";
+import { auth, onAuthStateChanged, signOut, db, analytics } from "./lib/firebase";
 import { doc, setDoc, onSnapshot } from "firebase/firestore";
+import { logEvent } from "firebase/analytics";
 
 import { Logo, LogoText } from "./components/Logo";
+import { Toaster } from 'react-hot-toast';
 
 function Layout({ children, onLogout, userPhoto, gmbConnected }: { children: React.ReactNode, onLogout: () => void, userPhoto: string | null, gmbConnected: boolean }) {
   const location = useLocation();
+
+  useEffect(() => {
+    if (analytics) {
+      logEvent(analytics, 'page_view', {
+        page_path: location.pathname,
+        page_search: location.search,
+        page_hash: location.hash
+      });
+    }
+  }, [location]);
 
   const navItems = [
     { path: "/", label: "Início", icon: Home },
@@ -140,6 +152,8 @@ export default function App() {
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean>(false);
   const [gmbConnected, setGmbConnected] = useState<boolean>(false);
 
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
   useEffect(() => {
     let snapshotUnsubscribe: (() => void) | undefined;
 
@@ -188,8 +202,17 @@ export default function App() {
     };
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = async () => {
+    setShowLogoutModal(false);
     await signOut(auth);
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
   };
 
   const handleCompleteOnboarding = async () => {
@@ -222,17 +245,47 @@ export default function App() {
   }
 
   return (
-    <Router>
-      <Layout onLogout={handleLogout} userPhoto={userPhoto} gmbConnected={gmbConnected}>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/diagnosis" element={<Diagnosis />} />
-          <Route path="/qrcode" element={<QrCodeView />} />
-          <Route path="/dicas" element={<DicasPro />} />
-          <Route path="/conexao" element={<Conexao />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <>
+      <Router>
+        <Layout onLogout={handleLogoutClick} userPhoto={userPhoto} gmbConnected={gmbConnected}>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/diagnosis" element={<Diagnosis />} />
+            <Route path="/qrcode" element={<QrCodeView />} />
+            <Route path="/dicas" element={<DicasPro />} />
+            <Route path="/conexao" element={<Conexao />} />
+          </Routes>
+        </Layout>
+      </Router>
+
+      <Toaster position="top-right" />
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Sair do aplicativo</h3>
+            <p className="text-gray-600 mb-6">
+              Tem certeza que deseja sair da sua conta? Você precisará fazer login novamente para acessar.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={cancelLogout}
+                className="flex-1 py-3 px-4 rounded-xl font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmLogout}
+                className="flex-1 py-3 px-4 rounded-xl font-medium text-white bg-red-600 hover:bg-red-700 transition-colors"
+              >
+                Sair
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

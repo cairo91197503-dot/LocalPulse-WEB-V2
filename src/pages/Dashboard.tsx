@@ -1,53 +1,125 @@
-import { useState, useEffect } from "react";
-import { Shield, Calendar, MessageSquareText, TrendingUp, ArrowRight, QrCode, Sparkles, Store, Star, ExternalLink, Bell } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Shield, Calendar, MessageSquareText, TrendingUp, ArrowRight, QrCode, Sparkles, Store, Star, ExternalLink, Bell, Download, AlertTriangle } from "lucide-react";
 import { Link } from "react-router";
-import { auth, db } from "../lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { auth, db, messaging } from "../lib/firebase";
+import { sendEmailVerification } from "firebase/auth";
+import { useGmbData } from "../hooks/useGmbData";
+import { getToken, onMessage } from "firebase/messaging";
+import { doc, setDoc } from "firebase/firestore";
+import html2pdf from "html2pdf.js";
+import toast from "react-hot-toast";
 
 export default function Dashboard() {
   const user = auth.currentUser;
-  const [gmbConnected, setGmbConnected] = useState(false);
-  const [businessData, setBusinessData] = useState<any>(null);
+  const { gmbConnected, businessData, loading, lastUpdated } = useGmbData();
+  const dashboardRef = useRef<HTMLDivElement>(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isSendingVerification, setIsSendingVerification] = useState(false);
+
+  const handleResendVerification = async () => {
+    if (!user) return;
+    setIsSendingVerification(true);
+    const toastId = toast.loading("Enviando e-mail de verificação...");
+    try {
+      await sendEmailVerification(user);
+      toast.success("E-mail de verificação enviado! Verifique sua caixa de entrada.", { id: toastId });
+    } catch (error: any) {
+      console.error(error);
+      if (error.code === 'auth/too-many-requests') {
+        toast.error("Muitas tentativas. Aguarde um momento e tente novamente.", { id: toastId });
+      } else {
+        toast.error("Erro ao enviar e-mail de verificação.", { id: toastId });
+      }
+    } finally {
+      setIsSendingVerification(false);
+    }
+  };
+
+  const generatePDF = () => {
+    if (!dashboardRef.current) return;
+    setIsGeneratingPdf(true);
+    
+    const element = dashboardRef.current;
+    const opt = {
+      margin: 10,
+      filename: `Relatorio_LocalPulse_${new Date().toISOString().split('T')[0]}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+      setIsGeneratingPdf(false);
+      toast.success("Relatório gerado com sucesso!");
+    }).catch((err: any) => {
+      console.error("Erro ao gerar PDF:", err);
+      setIsGeneratingPdf(false);
+      toast.error("Erro ao gerar relatório.");
+    });
+  };
 
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: 'review',
-      title: 'Nova avaliação recebida!',
-      message: 'Você recebeu uma nova avaliação. Responda rapidamente para melhorar seu engajamento.',
-      read: false,
-      link: 'https://business.google.com/reviews'
-    },
-    {
-      id: 2,
-      type: 'tip',
-      title: 'Dica Pro adicionada',
-      message: 'Nova dica disponível: Como utilizar o QR Code de forma eficiente no seu balcão.',
-      read: false,
-      link: '/dicas'
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    const setupMessaging = async () => {
+      if (messaging && user) {
+        try {
+          // Request permission
+          const permission = await Notification.requestPermission();
+          if (permission === 'granted') {
+            const token = await getToken(messaging, { 
+              vapidKey: 'BPr7sD0Dq6s4Uf2xN9Hq6g3Z2V9W7Y2X0R4T1Q8M6N5P3L0K7J4H1F8E5C2A9B6' // Optional: Replace with actual VAPID key if you have one
+            });
+            if (token) {
+              await setDoc(doc(db, "users", user.uid), { fcmToken: token }, { merge: true });
+            }
+          }
+        } catch (error) {
+          console.error('Error setting up Firebase Messaging:', error);
+        }
+
+        // Listen for foreground messages
+        onMessage(messaging, (payload) => {
+          setNotifications(prev => [{
+            id: Date.now(),
+            type: 'push',
+            title: payload.notification?.title || 'Nova Notificação',
+            message: payload.notification?.body || '',
+            read: false,
+            link: payload.data?.link || 'https://business.google.com/reviews'
+          }, ...prev]);
+        });
+      }
+    };
+    
+    setupMessaging();
+  }, [user]);
+
+  useEffect(() => {
+    if (businessData && businessData.reviews && businessData.reviews.length > 0) {
+      // Cria uma notificação baseada na última avaliação (apenas como exemplo real)
+      const latestReview = businessData.reviews[0];
+      setNotifications([
+        {
+          id: latestReview.reviewId || 1,
+          type: 'review',
+          title: 'Nova avaliação recebida!',
+          message: `Você recebeu uma avaliação de ${latestReview.reviewer?.displayName || 'Cliente'}. Responda para melhorar seu engajamento.`,
+          read: false,
+          link: 'https://business.google.com/reviews'
+        }
+      ]);
+    } else {
+      setNotifications([]);
     }
-  ]);
+  }, [businessData]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const markAsRead = (id: number) => {
     setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
   };
-
-  useEffect(() => {
-    const checkGmb = async () => {
-      if (user) {
-        const docRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().gmbConnected) {
-          setGmbConnected(true);
-          setBusinessData(docSnap.data().businessData || null);
-        }
-      }
-    };
-    checkGmb();
-  }, [user]);
 
   const features = [
     { icon: Shield, title: "REPUTAÇÃO", desc: "Fortaleça sua presença e conquiste confiança.", color: "text-teal-500 bg-teal-50" },
@@ -57,7 +129,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={dashboardRef}>
       {/* Header Info */}
       <div className="py-4 flex justify-between items-center relative">
         <div>
@@ -67,7 +139,22 @@ export default function Dashboard() {
           </h1>
         </div>
         
-        <div className="relative">
+        <div className="relative flex items-center gap-3">
+          {gmbConnected && (
+            <button 
+              onClick={generatePDF}
+              disabled={isGeneratingPdf}
+              title="Gerar Relatório em PDF"
+              className="w-12 h-12 bg-white border border-gray-200 rounded-full flex items-center justify-center relative hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50"
+            >
+              {isGeneratingPdf ? (
+                <div className="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <Download className="text-gray-600" size={20} />
+              )}
+            </button>
+          )}
+
           <button 
             onClick={() => setShowNotifications(!showNotifications)}
             className="w-12 h-12 bg-white border border-gray-200 rounded-full flex items-center justify-center relative hover:bg-gray-50 transition-colors shadow-sm"
@@ -152,6 +239,30 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Email Verification Warning */}
+      {user && !user.emailVerified && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="bg-amber-100 text-amber-600 rounded-full p-2 shrink-0">
+              <AlertTriangle size={20} />
+            </div>
+            <div>
+              <h3 className="font-bold text-amber-900 text-sm">Verifique seu e-mail</h3>
+              <p className="text-xs text-amber-800 mt-0.5">
+                Para garantir a segurança da sua conta e habilitar todos os recursos, por favor confirme seu endereço de e-mail.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleResendVerification}
+            disabled={isSendingVerification}
+            className="w-full sm:w-auto px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold rounded-xl transition-colors shrink-0 disabled:opacity-50"
+          >
+            {isSendingVerification ? 'Enviando...' : 'Reenviar e-mail'}
+          </button>
+        </div>
+      )}
 
       {/* Feature Pills (Horizontal Scroll on Mobile) */}
       <div className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 md:mx-0 md:px-0 hide-scrollbar">
@@ -356,6 +467,7 @@ export default function Dashboard() {
                     href="https://business.google.com/reviews" 
                     target="_blank" 
                     rel="noopener noreferrer"
+                    onClick={() => toast.success("Redirecionando para responder avaliação no Google...")}
                     className="shrink-0 flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition-colors"
                   >
                     Responder
@@ -382,6 +494,25 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* Sync Status Footer */}
+      {(gmbConnected || loading) && (
+        <div className="flex justify-center items-center gap-2 pt-2 pb-6 text-xs text-gray-500">
+          {loading ? (
+            <>
+              <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <span>Atualizando dados em tempo real...</span>
+            </>
+          ) : (
+            <>
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span>
+                Sincronizado {lastUpdated ? `hoje às ${lastUpdated.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : 'agora mesmo'}
+              </span>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

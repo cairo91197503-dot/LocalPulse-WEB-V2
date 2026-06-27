@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { ArrowLeft, Download, Info, Check, Link as LinkIcon, RefreshCw, Store } from "lucide-react";
 import { Link } from "react-router";
-import { auth, db } from "../lib/firebase";
+import { auth, db, analytics } from "../lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { logEvent } from "firebase/analytics";
 
 export default function QrCodeView() {
   const [businessUrl, setBusinessUrl] = useState<string>("");
@@ -47,6 +48,9 @@ export default function QrCodeView() {
     try {
       await setDoc(doc(db, "users", user.uid), { reviewUrl: inputUrl }, { merge: true });
       setBusinessUrl(inputUrl);
+      if (analytics) {
+        logEvent(analytics, 'generate_qr_code');
+      }
     } catch (error) {
       console.error("Erro ao salvar URL:", error);
     } finally {
@@ -74,6 +78,10 @@ export default function QrCodeView() {
         document.body.appendChild(downloadLink);
         downloadLink.click();
         document.body.removeChild(downloadLink);
+        
+        if (analytics) {
+          logEvent(analytics, 'download_qr_code');
+        }
       }
     }
   };

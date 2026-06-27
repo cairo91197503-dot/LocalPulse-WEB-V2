@@ -3,6 +3,7 @@ import { Store, CheckCircle2, RefreshCw, LogOut, MapPin, ExternalLink, Info } fr
 import { auth, db, signInWithPopup } from "../lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { GoogleAuthProvider } from "firebase/auth";
+import toast from "react-hot-toast";
 
 export default function Conexao() {
   const user = auth.currentUser;
@@ -42,6 +43,7 @@ export default function Conexao() {
   const handleConnectGoogle = async () => {
     if (!user) return;
     setIsConnecting(true);
+    const toastId = toast.loading("Conectando ao Google...");
     try {
       const provider = new GoogleAuthProvider();
       provider.addScope('https://www.googleapis.com/auth/business.manage');
@@ -70,11 +72,16 @@ export default function Conexao() {
           }
         }
         setLocations(allLocations);
+        toast.success("Contas encontradas com sucesso!", { id: toastId });
+      } else {
+        toast.error("Não foi possível obter a credencial do Google.", { id: toastId });
       }
     } catch (err: any) {
       console.error(err);
       if (err.code !== 'auth/popup-closed-by-user') {
-        alert("Erro ao conectar com Google.");
+        toast.error("Erro ao conectar com Google.", { id: toastId });
+      } else {
+        toast.dismiss(toastId);
       }
     } finally {
       setIsConnecting(false);
@@ -84,6 +91,7 @@ export default function Conexao() {
   const handleSelectLocation = async (location: any) => {
     if (!user) return;
     setIsConnecting(true);
+    const toastId = toast.loading("Salvando perfil...");
     try {
       let reviewUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location.title || 'Minha Empresa')}`;
       
@@ -118,9 +126,10 @@ export default function Conexao() {
       
       setGmbConnected(true);
       setSelectedLocationName(location.name);
+      toast.success("Perfil salvo com sucesso!", { id: toastId });
     } catch (err) {
       console.error(err);
-      alert("Erro ao salvar perfil.");
+      toast.error("Erro ao salvar perfil.", { id: toastId });
     } finally {
       setIsConnecting(false);
     }
@@ -131,6 +140,7 @@ export default function Conexao() {
     if (!window.confirm("Tem certeza que deseja desconectar seu perfil?")) return;
     
     setIsConnecting(true);
+    const toastId = toast.loading("Desconectando...");
     try {
       await setDoc(doc(db, "users", user.uid), { 
         gmbConnected: false,
@@ -142,8 +152,10 @@ export default function Conexao() {
       setSelectedLocationName(null);
       setLocations([]);
       setAccounts([]);
+      toast.success("Perfil desconectado com sucesso!", { id: toastId });
     } catch (err) {
       console.error(err);
+      toast.error("Erro ao desconectar.", { id: toastId });
     } finally {
       setIsConnecting(false);
     }

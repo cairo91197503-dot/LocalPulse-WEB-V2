@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { COURSE_MODULES, GOLD_CHECKLIST_ITEMS, Module } from '../data/curso';
 import { ArrowLeft, CheckCircle2, ChevronRight, Sparkles, BookOpen, ChevronLeft } from 'lucide-react';
+import { analytics } from '../lib/firebase';
+import { logEvent } from 'firebase/analytics';
 
 export default function DicasPro() {
   const location = useLocation();
@@ -20,6 +22,9 @@ export default function DicasPro() {
         setSelectedModule(mod);
         setCurrentPageIndex(0);
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (analytics) {
+          logEvent(analytics, 'open_module', { module_id: mod.id, module_name: mod.title });
+        }
       }
     }
   }, [location]);
@@ -45,6 +50,9 @@ export default function DicasPro() {
       updated = updated.filter(id => id !== moduleId);
     } else {
       updated.push(moduleId);
+      if (analytics) {
+        logEvent(analytics, 'complete_module', { module_id: moduleId });
+      }
     }
     setCompletedModules(updated);
     localStorage.setItem('@gmn_completed_modules', JSON.stringify(updated));
@@ -55,12 +63,18 @@ export default function DicasPro() {
     updated[index] = !updated[index];
     setGoldChecklist(updated);
     localStorage.setItem('@gmn_gold_checklist', JSON.stringify(updated));
+    if (analytics && updated[index]) {
+      logEvent(analytics, 'check_gold_item', { item_index: index });
+    }
   };
 
   const handleOpenModule = (module: Module) => {
     setSelectedModule(module);
     setCurrentPageIndex(0);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (analytics) {
+      logEvent(analytics, 'open_module', { module_id: module.id, module_name: module.title });
+    }
   };
 
   const handleNextPage = () => {
