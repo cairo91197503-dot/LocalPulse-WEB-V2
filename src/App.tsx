@@ -1,6 +1,21 @@
 import { useState, useEffect } from "react";
-import { HashRouter as Router, Routes, Route, Link, useLocation } from "react-router";
-import { Home, Sparkles, QrCode, LogOut, Settings, GraduationCap, CheckCircle2, Store } from "lucide-react";
+import {
+  HashRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useLocation,
+} from "react-router";
+import {
+  Home,
+  Sparkles,
+  QrCode,
+  LogOut,
+  Settings,
+  GraduationCap,
+  CheckCircle2,
+  Store,
+} from "lucide-react";
 import Dashboard from "./pages/Dashboard";
 import Diagnosis from "./pages/Diagnosis";
 import QrCodeView from "./pages/QrCodeView";
@@ -8,36 +23,108 @@ import DicasPro from "./pages/DicasPro";
 import Conexao from "./pages/Conexao";
 import Login from "./pages/Login";
 import Onboarding from "./pages/Onboarding";
-import { auth, onAuthStateChanged, signOut, db, analytics } from "./lib/firebase";
+import Profile from "./pages/Profile";
+import {
+  auth,
+  onAuthStateChanged,
+  signOut,
+  db,
+  analytics,
+} from "./lib/firebase";
+import { Steps } from "intro.js-react";
+import "intro.js/introjs.css";
 import { doc, setDoc, onSnapshot } from "firebase/firestore";
 import { logEvent } from "firebase/analytics";
 
 import { Logo, LogoText } from "./components/Logo";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
 
-function Layout({ children, onLogout, userPhoto, gmbConnected }: { children: React.ReactNode, onLogout: () => void, userPhoto: string | null, gmbConnected: boolean }) {
+function Layout({
+  children,
+  onLogout,
+  userPhoto,
+  gmbConnected,
+}: {
+  children: React.ReactNode;
+  onLogout: () => void;
+  userPhoto: string | null;
+  gmbConnected: boolean;
+}) {
   const location = useLocation();
+
+  const [stepsEnabled, setStepsEnabled] = useState(false);
+
+  useEffect(() => {
+    const hasSeenTour = localStorage.getItem("hasSeenNavTour");
+    // Show tour on desktop where sidebar is visible
+    if (!hasSeenTour && window.innerWidth >= 768) {
+      const timer = setTimeout(() => {
+        setStepsEnabled(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const onExit = () => {
+    setStepsEnabled(false);
+    localStorage.setItem("hasSeenNavTour", "true");
+  };
+
+  const steps = [
+    {
+      element: '#tour-nav-inicio',
+      intro: 'Acompanhe as métricas e avaliações gerais do seu negócio.',
+    },
+    {
+      element: '#tour-nav-diagnosis',
+      intro: 'Receba um diagnóstico inteligente usando Inteligência Artificial.',
+    },
+    {
+      element: '#tour-nav-qrcode',
+      intro: 'Crie e baixe QR Codes para facilitar avaliações dos clientes.',
+    },
+    {
+      element: '#tour-nav-dicas',
+      intro: 'Explore dicas exclusivas e estratégias para melhorar sua reputação online.',
+    },
+    {
+      element: '#tour-nav-conexao',
+      intro: 'Gerencie a conexão da sua conta com o Google Business Profile.',
+    }
+  ];
 
   useEffect(() => {
     if (analytics) {
-      logEvent(analytics, 'page_view', {
+      logEvent(analytics, "page_view", {
         page_path: location.pathname,
         page_search: location.search,
-        page_hash: location.hash
+        page_hash: location.hash,
       });
     }
   }, [location]);
 
   const navItems = [
-    { path: "/", label: "Início", icon: Home },
-    { path: "/diagnosis", label: "Diagnóstico IA", icon: Sparkles },
-    { path: "/qrcode", label: "QR Code", icon: QrCode },
-    { path: "/dicas", label: "Dicas Pro", icon: GraduationCap },
-    { path: "/conexao", label: "Conexão", icon: Store },
+    { path: "/", label: "Início", icon: Home, id: "tour-nav-inicio" },
+    { path: "/diagnosis", label: "Diagnóstico IA", icon: Sparkles, id: "tour-nav-diagnosis" },
+    { path: "/qrcode", label: "QR Code", icon: QrCode, id: "tour-nav-qrcode" },
+    { path: "/dicas", label: "Dicas Pro", icon: GraduationCap, id: "tour-nav-dicas" },
+    { path: "/conexao", label: "Conexão", icon: Store, id: "tour-nav-conexao" },
   ];
 
   return (
     <div className="flex h-screen bg-gray-50 text-gray-900">
+      <Steps
+        enabled={stepsEnabled}
+        steps={steps}
+        initialStep={0}
+        onExit={onExit}
+        options={{
+          nextLabel: 'Próximo',
+          prevLabel: 'Anterior',
+          doneLabel: 'Concluir',
+          showProgress: true,
+        }}
+      />
       {/* Sidebar for Desktop */}
       <aside className="hidden md:flex w-64 flex-col bg-white border-r border-gray-200">
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
@@ -46,7 +133,7 @@ function Layout({ children, onLogout, userPhoto, gmbConnected }: { children: Rea
             <LogoText className="text-2xl font-bold tracking-tight" />
           </div>
         </div>
-        
+
         <nav className="flex-1 p-4 space-y-2">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -55,33 +142,43 @@ function Layout({ children, onLogout, userPhoto, gmbConnected }: { children: Rea
               <Link
                 key={item.path}
                 to={item.path}
+                id={item.id}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
-                  isActive 
-                    ? "bg-teal-50 text-teal-700 font-medium" 
+                  isActive
+                    ? "bg-teal-50 text-teal-700 font-medium"
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
-                <Icon size={20} className={isActive ? "text-teal-600" : "text-gray-400"} />
+                <Icon
+                  size={20}
+                  className={isActive ? "text-teal-600" : "text-gray-400"}
+                />
                 {item.label}
               </Link>
             );
           })}
         </nav>
-        
+
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center justify-between mb-2 px-4 py-2">
             {gmbConnected && (
-              <div className="flex items-center gap-1.5 text-teal-600 bg-teal-50 px-3 py-1.5 rounded-full border border-teal-100" title="Perfil da Empresa Conectado">
+              <div
+                className="flex items-center gap-1.5 text-teal-600 bg-teal-50 px-3 py-1.5 rounded-full border border-teal-100"
+                title="Perfil da Empresa Conectado"
+              >
                 <Store size={16} />
                 <CheckCircle2 size={16} />
               </div>
             )}
           </div>
-          <button className="flex items-center gap-3 px-4 py-3 w-full text-left rounded-xl text-gray-600 hover:bg-gray-100 transition-colors">
+          <Link
+            to="/perfil"
+            className="flex items-center gap-3 px-4 py-3 w-full text-left rounded-xl text-gray-600 hover:bg-gray-100 transition-colors"
+          >
             <Settings size={20} className="text-gray-400" />
             Configurações
-          </button>
-          <button 
+          </Link>
+          <button
             onClick={onLogout}
             className="flex items-center gap-3 px-4 py-3 w-full text-left rounded-xl text-red-600 hover:bg-red-50 transition-colors mt-1"
           >
@@ -101,16 +198,27 @@ function Layout({ children, onLogout, userPhoto, gmbConnected }: { children: Rea
           </div>
           <div className="flex items-center gap-3">
             {gmbConnected && (
-              <div className="flex items-center gap-1.5 text-teal-600 bg-teal-50 px-2.5 py-1.5 rounded-full border border-teal-100" title="Perfil da Empresa Conectado">
+              <div
+                className="flex items-center gap-1.5 text-teal-600 bg-teal-50 px-2.5 py-1.5 rounded-full border border-teal-100"
+                title="Perfil da Empresa Conectado"
+              >
                 <Store size={16} />
                 <CheckCircle2 size={16} />
               </div>
             )}
-            <button onClick={onLogout} className="p-2 text-red-600 bg-red-50 rounded-full flex items-center gap-2">
+            <button
+              onClick={onLogout}
+              className="p-2 text-red-600 bg-red-50 rounded-full flex items-center gap-2"
+            >
               {userPhoto ? (
-                 <img src={userPhoto} alt="Perfil" className="w-6 h-6 rounded-full" referrerPolicy="no-referrer" />
+                <img
+                  src={userPhoto}
+                  alt="Perfil"
+                  className="w-6 h-6 rounded-full"
+                  referrerPolicy="no-referrer"
+                />
               ) : (
-                 <LogOut size={16} />
+                <LogOut size={16} />
               )}
               <span className="text-xs font-bold">Sair</span>
             </button>
@@ -161,10 +269,10 @@ export default function App() {
       if (user) {
         setIsAuthenticated(true);
         setUserPhoto(user.photoURL);
-        
+
         try {
           const docRef = doc(db, "users", user.uid);
-          
+
           snapshotUnsubscribe = onSnapshot(docRef, (docSnap) => {
             if (!docSnap.exists() || !docSnap.data().hasSeenOnboarding) {
               setNeedsOnboarding(true);
@@ -219,7 +327,11 @@ export default function App() {
     const user = auth.currentUser;
     if (user) {
       try {
-        await setDoc(doc(db, "users", user.uid), { hasSeenOnboarding: true }, { merge: true });
+        await setDoc(
+          doc(db, "users", user.uid),
+          { hasSeenOnboarding: true },
+          { merge: true },
+        );
         setNeedsOnboarding(false);
       } catch (error) {
         console.error("Error saving onboarding status:", error);
@@ -247,13 +359,18 @@ export default function App() {
   return (
     <>
       <Router>
-        <Layout onLogout={handleLogoutClick} userPhoto={userPhoto} gmbConnected={gmbConnected}>
+        <Layout
+          onLogout={handleLogoutClick}
+          userPhoto={userPhoto}
+          gmbConnected={gmbConnected}
+        >
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/diagnosis" element={<Diagnosis />} />
             <Route path="/qrcode" element={<QrCodeView />} />
             <Route path="/dicas" element={<DicasPro />} />
             <Route path="/conexao" element={<Conexao />} />
+            <Route path="/perfil" element={<Profile />} />
           </Routes>
         </Layout>
       </Router>
@@ -264,9 +381,12 @@ export default function App() {
       {showLogoutModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-xl">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Sair do aplicativo</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              Sair do aplicativo
+            </h3>
             <p className="text-gray-600 mb-6">
-              Tem certeza que deseja sair da sua conta? Você precisará fazer login novamente para acessar.
+              Tem certeza que deseja sair da sua conta? Você precisará fazer
+              login novamente para acessar.
             </p>
             <div className="flex gap-3">
               <button
@@ -288,4 +408,3 @@ export default function App() {
     </>
   );
 }
-
