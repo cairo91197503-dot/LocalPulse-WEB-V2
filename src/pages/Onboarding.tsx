@@ -41,7 +41,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
       <div className="sm:mx-auto sm:w-full sm:max-w-md flex flex-col items-center animate-in fade-in zoom-in duration-500">
         
         <div className="mb-12 flex justify-center">
@@ -49,10 +49,10 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
         </div>
 
         <div className="text-center px-4">
-          <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-4">
+          <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight mb-4">
             {slides[step].title}
           </h2>
-          <p className="text-lg text-gray-600 font-medium leading-relaxed max-w-sm mx-auto min-h-[80px]">
+          <p className="text-lg text-gray-600 dark:text-gray-400 font-medium leading-relaxed max-w-sm mx-auto min-h-[80px]">
             {slides[step].desc}
           </p>
         </div>

@@ -183,25 +183,25 @@ export default function Diagnosis() {
       <div className="flex items-center gap-4 py-2">
         <Link
           to="/"
-          className="p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+          className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 dark:bg-slate-800 text-gray-600 dark:text-gray-400 transition-colors"
         >
           <ArrowLeft size={24} />
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
           Diagnóstico de Reputação
         </h1>
       </div>
 
       {businessName && !loading && (
-        <div className="bg-white border border-gray-100 p-4 rounded-2xl flex items-center gap-3 shadow-sm">
+        <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-4 rounded-2xl flex items-center gap-3 shadow-sm">
           <div className="p-2 bg-purple-50 rounded-lg">
             <Store size={20} className="text-purple-600" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
               Analisando empresa
             </p>
-            <p className="text-sm font-bold text-gray-900">{businessName}</p>
+            <p className="text-sm font-bold text-gray-900 dark:text-white">{businessName}</p>
           </div>
         </div>
       )}
@@ -211,21 +211,21 @@ export default function Diagnosis() {
           <div className="animate-spin text-purple-600">
             <RefreshCw size={32} />
           </div>
-          <p className="text-gray-500 font-medium">
+          <p className="text-gray-500 dark:text-gray-400 font-medium">
             Analisando sua presença online...
           </p>
         </div>
       )}
 
       {!loading && !businessName && !data && !error && (
-        <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm text-center animate-in fade-in slide-in-from-bottom-4">
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm text-center animate-in fade-in slide-in-from-bottom-4">
           <div className="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <Store size={28} className="text-purple-600" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-3">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
             Conecte sua Empresa
           </h2>
-          <p className="text-gray-500 mb-8 max-w-md mx-auto">
+          <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
             Para gerar um diagnóstico preciso utilizando Inteligência
             Artificial, você precisa conectar o Perfil da Empresa no Google.
           </p>
@@ -240,7 +240,7 @@ export default function Diagnosis() {
             <Link
               to="/dicas"
               state={{ openModuleId: 3 }}
-              className="bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold py-3.5 px-6 rounded-xl border border-gray-200 transition-colors"
+              className="bg-gray-50 dark:bg-slate-950 hover:bg-gray-100 dark:hover:bg-slate-800 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-bold py-3.5 px-6 rounded-xl border border-gray-200 dark:border-slate-700 transition-colors"
             >
               Ver Instruções
             </Link>
@@ -257,7 +257,7 @@ export default function Diagnosis() {
       )}
 
       {error && !loading && (
-        <div className="bg-red-50 text-red-700 p-6 rounded-2xl border border-red-100 text-center">
+        <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 p-6 rounded-2xl border border-red-100 text-center">
           <p className="font-medium mb-4">{error}</p>
           <button
             onClick={fetchDiagnosis}
@@ -272,7 +272,7 @@ export default function Diagnosis() {
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div
             id="tour-diagnosis-score"
-            className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm text-center"
+            className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm text-center"
           >
             <h2
               className={`text-6xl font-black tracking-tighter mb-2 ${getScoreColor(data.score)}`}
@@ -285,14 +285,14 @@ export default function Diagnosis() {
               {data.nivel}
             </p>
 
-            <div className="h-2 w-full max-w-md mx-auto bg-gray-100 rounded-full overflow-hidden mb-6">
+            <div className="h-2 w-full max-w-md mx-auto bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden mb-6">
               <div
                 className={`h-full rounded-full transition-all duration-1000 ${getScoreBg(data.score)}`}
                 style={{ width: `${data.score}%` }}
               ></div>
             </div>
 
-            <p className="text-gray-600 max-w-lg mx-auto leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-400 max-w-lg mx-auto leading-relaxed">
               {data.resumo}
             </p>
           </div>
@@ -306,7 +306,7 @@ export default function Diagnosis() {
                 {data.pontos_positivos.map((p, i) => (
                   <div
                     key={i}
-                    className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm text-gray-700 text-sm"
+                    className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm text-gray-700 dark:text-gray-300 text-sm"
                   >
                     {p}
                   </div>
@@ -317,14 +317,14 @@ export default function Diagnosis() {
 
           {data.pontos_negativos.length > 0 && (
             <div id="tour-diagnosis-negative">
-              <h3 className="text-red-700 font-bold flex items-center gap-2 mb-3 px-2 mt-6">
+              <h3 className="text-red-700 dark:text-red-300 font-bold flex items-center gap-2 mb-3 px-2 mt-6">
                 <AlertTriangle size={20} /> Pontos de atenção
               </h3>
               <div className="space-y-2">
                 {data.pontos_negativos.map((p, i) => (
                   <div
                     key={i}
-                    className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm text-gray-700 text-sm"
+                    className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm text-gray-700 dark:text-gray-300 text-sm"
                   >
                     {p}
                   </div>
@@ -342,14 +342,14 @@ export default function Diagnosis() {
                 {data.acoes_prioritarias.map((acao, i) => (
                   <div
                     key={i}
-                    className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm"
+                    className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm"
                   >
                     <div className="flex justify-between items-start gap-4 mb-2">
-                      <h4 className="font-bold text-gray-900">{acao.titulo}</h4>
+                      <h4 className="font-bold text-gray-900 dark:text-white">{acao.titulo}</h4>
                       <span
                         className={`text-xs font-bold px-2.5 py-1 rounded-lg shrink-0 ${
                           acao.impacto === "Alto"
-                            ? "bg-red-50 text-red-700"
+                            ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300"
                             : acao.impacto === "Médio"
                               ? "bg-orange-50 text-orange-700"
                               : "bg-green-50 text-green-700"
@@ -358,7 +358,7 @@ export default function Diagnosis() {
                         {acao.impacto}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 leading-relaxed">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                       {acao.descricao}
                     </p>
                   </div>
@@ -370,7 +370,7 @@ export default function Diagnosis() {
           <div className="pt-4">
             <button
               onClick={fetchDiagnosis}
-              className="w-full flex items-center justify-center gap-2 py-4 bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold rounded-2xl transition-colors border border-gray-200"
+              className="w-full flex items-center justify-center gap-2 py-4 bg-gray-50 dark:bg-slate-950 hover:bg-gray-100 dark:hover:bg-slate-800 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-bold rounded-2xl transition-colors border border-gray-200 dark:border-slate-700"
             >
               <RefreshCw size={20} />
               Novo diagnóstico

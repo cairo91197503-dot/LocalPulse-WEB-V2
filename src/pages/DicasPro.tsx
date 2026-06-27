@@ -103,10 +103,10 @@ export default function DicasPro() {
     
     return (
       <div className="space-y-6 max-w-3xl mx-auto">
-        <div className="flex items-center justify-between py-2 border-b border-gray-100 pb-4">
+        <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-slate-800 pb-4">
           <button 
             onClick={() => setSelectedModule(null)}
-            className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors font-medium"
+            className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:text-white transition-colors font-medium"
           >
             <ArrowLeft size={20} />
             Fechar Aula
@@ -116,15 +116,15 @@ export default function DicasPro() {
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-gray-100 min-h-[400px] animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-2">{page.title}</h2>
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 md:p-10 shadow-sm border border-gray-100 dark:border-slate-800 min-h-[400px] animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight mb-2">{page.title}</h2>
           {page.subtitle && (
-            <p className="text-lg text-gray-500 font-medium mb-8">{page.subtitle}</p>
+            <p className="text-lg text-gray-500 dark:text-gray-400 font-medium mb-8">{page.subtitle}</p>
           )}
 
           <div className="space-y-4 mb-10">
             {page.paragraphs.map((para, pIdx) => (
-              <p key={pIdx} className="text-gray-700 leading-relaxed text-lg whitespace-pre-wrap">
+              <p key={pIdx} className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg whitespace-pre-wrap">
                 {para}
               </p>
             ))}
@@ -133,11 +133,11 @@ export default function DicasPro() {
           {page.type === 'rules' && page.visualData && (
             <div className="grid grid-cols-1 gap-4 mt-8">
               {page.visualData.incorrect && (
-                <div className="bg-red-50 border border-red-200 rounded-2xl p-5">
-                  <h4 className="text-red-700 font-bold flex items-center gap-2 mb-2">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-2xl p-5">
+                  <h4 className="text-red-700 dark:text-red-300 font-bold flex items-center gap-2 mb-2">
                     <span className="text-xl">❌</span> Incorreto
                   </h4>
-                  <p className="text-gray-800 font-medium">{page.visualData.incorrect}</p>
+                  <p className="text-gray-800 dark:text-gray-200 font-medium">{page.visualData.incorrect}</p>
                 </div>
               )}
               {page.visualData.correct && (
@@ -145,20 +145,20 @@ export default function DicasPro() {
                   <h4 className="text-green-700 font-bold flex items-center gap-2 mb-2">
                     <span className="text-xl">✅</span> Correto
                   </h4>
-                  <p className="text-gray-800 font-medium">{page.visualData.correct}</p>
+                  <p className="text-gray-800 dark:text-gray-200 font-medium">{page.visualData.correct}</p>
                 </div>
               )}
             </div>
           )}
 
           {page.type === 'example' && page.visualData?.items && (
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 mt-8">
-              <h4 className="font-bold text-gray-600 mb-4 flex items-center gap-2">
+            <div className="bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-2xl p-6 mt-8">
+              <h4 className="font-bold text-gray-600 dark:text-gray-400 mb-4 flex items-center gap-2">
                 <span className="text-xl">🔍</span> Pesquisas Comuns no Google Maps:
               </h4>
               <div className="space-y-3">
                 {page.visualData.items.map((searchItem, sIdx) => (
-                  <div key={sIdx} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm text-gray-800 italic font-medium">
+                  <div key={sIdx} className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-4 shadow-sm text-gray-800 dark:text-gray-200 italic font-medium">
                     {searchItem}
                   </div>
                 ))}
@@ -173,8 +173,8 @@ export default function DicasPro() {
             disabled={currentPageIndex === 0}
             className={`flex-1 py-4 flex items-center justify-center gap-2 rounded-2xl font-bold transition-colors ${
               currentPageIndex === 0 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm'
+                ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 cursor-not-allowed' 
+                : 'bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800/50 dark:bg-slate-950 shadow-sm'
             }`}
           >
             <ChevronLeft size={20} />
@@ -200,14 +200,14 @@ export default function DicasPro() {
   return (
     <div className="space-y-8">
       {/* HEADER DO CURSO */}
-      <div className="bg-white p-8 md:p-10 rounded-3xl border border-gray-200 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 p-8 md:p-10 rounded-3xl border border-gray-200 dark:border-slate-700 shadow-sm">
         <div className="inline-block px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-black tracking-widest uppercase mb-4">
           Curso Completo
         </div>
-        <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-4">
+        <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-4">
           Perfil da Empresa no Google
         </h1>
-        <p className="text-lg text-gray-500 max-w-2xl leading-relaxed">
+        <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl leading-relaxed">
           Domine as estratégias práticas do Perfil de Empresa do Google para ranquear no topo do Maps e explodir suas vendas locais.
         </p>
       </div>
@@ -215,11 +215,11 @@ export default function DicasPro() {
       {/* LISTA DOS MÓDULOS */}
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <BookOpen size={24} className="text-blue-600" />
             Módulos das Lições
           </h2>
-          <span className="text-sm font-bold bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
+          <span className="text-sm font-bold bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-400 px-3 py-1 rounded-full">
             {completedModules.length} de {COURSE_MODULES.length} Concluídos
           </span>
         </div>
@@ -231,7 +231,7 @@ export default function DicasPro() {
               <button
                 key={module.id}
                 onClick={() => handleOpenModule(module)}
-                className="bg-white border border-gray-200 rounded-2xl p-5 text-left flex items-start gap-5 hover:border-gray-300 hover:shadow-md transition-all group"
+                className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl p-5 text-left flex items-start gap-5 hover:border-gray-300 hover:shadow-md transition-all group"
               >
                 <div 
                   className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 text-2xl shadow-sm"
@@ -240,15 +240,15 @@ export default function DicasPro() {
                   {module.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-gray-900 mb-1 truncate group-hover:text-blue-600 transition-colors">
+                  <h3 className="font-bold text-gray-900 dark:text-white mb-1 truncate group-hover:text-blue-600 transition-colors">
                     {module.title}
                   </h3>
-                  <p className="text-sm text-gray-500 mb-4 line-clamp-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-1">
                     {module.tagline}
                   </p>
                   
                   <div className="flex items-center gap-3">
-                    <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="flex-1 h-1.5 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div 
                         className={`h-full rounded-full transition-all duration-500`}
                         style={{ 
@@ -270,16 +270,16 @@ export default function DicasPro() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* BÔNUS: CHECKLIST DE OURO */}
-        <div className="bg-amber-50 border border-amber-200 rounded-3xl p-8">
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-3xl p-8">
           <div className="flex items-center gap-4 mb-6">
             <div className="text-4xl">🏆</div>
             <div>
-              <h2 className="text-2xl font-black text-amber-900 tracking-tight">Checklist de Ouro</h2>
-              <p className="text-amber-700 font-medium">O mapa definitivo para ranquear</p>
+              <h2 className="text-2xl font-black text-amber-900 dark:text-amber-100 tracking-tight">Checklist de Ouro</h2>
+              <p className="text-amber-700 dark:text-amber-300 font-medium">O mapa definitivo para ranquear</p>
             </div>
           </div>
           
-          <p className="text-amber-800/80 mb-8 font-medium">
+          <p className="text-amber-800 dark:text-amber-200/80 mb-8 font-medium">
             Marque os itens que você já executou de forma consistente no perfil do seu negócio local:
           </p>
 
@@ -290,17 +290,17 @@ export default function DicasPro() {
                 <button
                   key={index}
                   onClick={() => toggleChecklistItem(index)}
-                  className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-amber-100/50 transition-colors text-left group"
+                  className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-amber-100 dark:bg-amber-900/50/50 transition-colors text-left group"
                 >
                   <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
                     isChecked 
                       ? 'bg-amber-500 border-amber-500 text-white' 
-                      : 'border-amber-300 bg-white group-hover:border-amber-400'
+                      : 'border-amber-300 bg-white dark:bg-slate-900 group-hover:border-amber-400'
                   }`}>
                     {isChecked && <CheckCircle2 size={16} strokeWidth={3} />}
                   </div>
                   <span className={`text-sm font-medium transition-colors ${
-                    isChecked ? 'text-amber-900/50 line-through' : 'text-amber-900'
+                    isChecked ? 'text-amber-900 dark:text-amber-100/50 line-through' : 'text-amber-900 dark:text-amber-100'
                   }`}>
                     {item}
                   </span>
@@ -321,26 +321,26 @@ export default function DicasPro() {
           </div>
 
           <div className="flex flex-wrap items-center gap-y-3 gap-x-2 mb-8">
-            <div className="bg-white border border-blue-200 text-blue-700 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm">📋 Perfil Completo</div>
+            <div className="bg-white dark:bg-slate-900 border border-blue-200 text-blue-700 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm">📋 Perfil Completo</div>
             <span className="text-blue-400 font-black">+</span>
-            <div className="bg-white border border-blue-200 text-blue-700 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm">⭐ Avaliações</div>
+            <div className="bg-white dark:bg-slate-900 border border-blue-200 text-blue-700 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm">⭐ Avaliações</div>
             <span className="text-blue-400 font-black">+</span>
-            <div className="bg-white border border-blue-200 text-blue-700 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm">📸 Fotos Frequentes</div>
+            <div className="bg-white dark:bg-slate-900 border border-blue-200 text-blue-700 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm">📸 Fotos Frequentes</div>
             <span className="text-blue-400 font-black">+</span>
-            <div className="bg-white border border-blue-200 text-blue-700 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm">📢 Posts Semanais</div>
+            <div className="bg-white dark:bg-slate-900 border border-blue-200 text-blue-700 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm">📢 Posts Semanais</div>
             <span className="text-blue-400 font-black">+</span>
-            <div className="bg-white border border-blue-200 text-blue-700 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm">🔍 SEO Local</div>
+            <div className="bg-white dark:bg-slate-900 border border-blue-200 text-blue-700 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm">🔍 SEO Local</div>
             <span className="text-blue-400 font-black">+</span>
-            <div className="bg-white border border-blue-200 text-blue-700 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm">👥 Engajamento</div>
+            <div className="bg-white dark:bg-slate-900 border border-blue-200 text-blue-700 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm">👥 Engajamento</div>
             <span className="text-blue-400 font-black">+</span>
-            <div className="bg-white border border-blue-200 text-blue-700 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm">📈 Google Ads</div>
+            <div className="bg-white dark:bg-slate-900 border border-blue-200 text-blue-700 font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm">📈 Google Ads</div>
           </div>
           
-          <div className="bg-white p-6 rounded-2xl border border-blue-200 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-blue-200 shadow-sm">
             <h3 className="font-bold text-green-700 mb-2 flex items-center gap-2">
               <Sparkles size={18} /> = Mais Visibilidade e Vendas 💰
             </h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
               Quando todos os fatores trabalham em sinergia, as chances de aparecer no topo do Maps e de disparar suas conversões de vendas sobem drasticamente!
             </p>
           </div>

@@ -21,6 +21,7 @@ import {
   X,
   WifiOff,
   GripVertical,
+  Camera,
 } from "lucide-react";
 import { Link } from "react-router";
 import { auth, db, messaging } from "../lib/firebase";
@@ -115,9 +116,9 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
 
   if (!reviews || reviews.length === 0) {
     return (
-      <div className="text-center py-8 bg-gray-50 rounded-2xl border border-gray-100">
+      <div className="text-center py-8 bg-gray-50 dark:bg-slate-950 rounded-2xl border border-gray-100 dark:border-slate-800">
         <MessageSquareText size={32} className="mx-auto text-gray-300 mb-3" />
-        <p className="text-sm text-gray-500 max-w-sm mx-auto mb-4">
+        <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-4">
           Ainda não carregamos suas avaliações recentes ou não há avaliações
           para exibir no momento.
         </p>
@@ -197,15 +198,15 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
         return (
           <div
             key={review.id || review.name}
-            className="bg-gray-50 p-4 rounded-2xl border border-gray-100 transition-all"
+            className="bg-gray-50 dark:bg-slate-950 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 transition-all"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-sm text-gray-900">
+                  <span className="font-bold text-sm text-gray-900 dark:text-white">
                     {review.reviewer?.displayName || "Cliente"}
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     •{" "}
                     {review.createTime
                       ? new Date(review.createTime).toLocaleDateString()
@@ -238,7 +239,7 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
                     );
                   })}
                 </div>
-                <p className="text-sm text-gray-700 line-clamp-2">
+                <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
                   {review.comment || "Avaliação sem texto."}
                 </p>
               </div>
@@ -258,14 +259,14 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
             </div>
 
             {isReplying && (
-              <div className="mt-4 pt-4 border-t border-gray-200 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-2 duration-200">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-semibold text-gray-800">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                     Sua Resposta
                   </p>
                   <button
                     onClick={() => setReplyingTo(null)}
-                    className="p-1 hover:bg-gray-200 rounded-full text-gray-500 transition-colors"
+                    className="p-1 hover:bg-gray-200 rounded-full text-gray-500 dark:text-gray-400 transition-colors"
                   >
                     <X size={16} />
                   </button>
@@ -293,7 +294,7 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
                     <button
                       key={idx}
                       onClick={() => setReplyText(tpl.text)}
-                      className="shrink-0 text-xs font-medium bg-white border border-gray-200 hover:border-teal-300 hover:bg-teal-50 text-gray-600 px-3 py-1.5 rounded-full transition-colors"
+                      className="shrink-0 text-xs font-medium bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 hover:border-teal-300 hover:bg-teal-50 dark:hover:bg-teal-900/40 dark:bg-teal-900/30 text-gray-600 dark:text-gray-400 px-3 py-1.5 rounded-full transition-colors"
                     >
                       {tpl.label}
                     </button>
@@ -304,13 +305,13 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   placeholder="Escreva sua resposta..."
-                  className="w-full h-24 p-3 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none resize-none mb-3"
+                  className="w-full h-24 p-3 text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none resize-none mb-3"
                 />
 
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => setReplyingTo(null)}
-                    className="px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-200 rounded-xl transition-colors"
+                    className="px-4 py-2 text-sm font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-200 rounded-xl transition-colors"
                   >
                     Cancelar
                   </button>
@@ -365,7 +366,7 @@ function SortableItem({
       <div
         {...attributes}
         {...listeners}
-        className="absolute -left-10 top-1/2 -translate-y-1/2 p-2 cursor-grab opacity-0 group-hover/sortable:opacity-100 transition-opacity z-20 text-gray-400 hover:text-gray-600 active:cursor-grabbing hidden md:flex"
+        className="absolute -left-10 top-1/2 -translate-y-1/2 p-2 cursor-grab opacity-0 group-hover/sortable:opacity-100 transition-opacity z-20 text-gray-400 hover:text-gray-600 dark:text-gray-400 active:cursor-grabbing hidden md:flex"
       >
         <GripVertical size={24} />
       </div>
@@ -381,6 +382,9 @@ export default function Dashboard() {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isGeneratingCsv, setIsGeneratingCsv] = useState(false);
   const [isEmailScheduled, setIsEmailScheduled] = useState(false);
+  const [dashboardDensity, setDashboardDensity] = useState<
+    "compact" | "expanded"
+  >("expanded");
   const [isSchedulingEmail, setIsSchedulingEmail] = useState(false);
   const [isSendingVerification, setIsSendingVerification] = useState(false);
   const [smartInsights, setSmartInsights] = useState<{
@@ -401,6 +405,7 @@ export default function Dashboard() {
     "quick_actions",
     "quick_tips",
     "recent_reviews",
+    "photos",
   ];
   const [layoutItems, setLayoutItems] = useState(DEFAULT_LAYOUT);
 
@@ -691,6 +696,9 @@ export default function Dashboard() {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
             setIsEmailScheduled(userDoc.data().weeklyEmail === true);
+            if (userDoc.data().dashboardDensity) {
+              setDashboardDensity(userDoc.data().dashboardDensity);
+            }
             if (userDoc.data().dashboardLayout) {
               const savedLayout = userDoc.data().dashboardLayout;
               // Ensure all default items exist in saved layout (in case we add new features later)
@@ -1047,7 +1055,7 @@ export default function Dashboard() {
       icon: Shield,
       title: "REPUTAÇÃO",
       desc: "Fortaleça sua presença e conquiste confiança.",
-      color: "text-teal-500 bg-teal-50",
+      color: "text-teal-500 bg-teal-50 dark:bg-teal-900/30",
     },
     {
       icon: Calendar,
@@ -1069,8 +1077,13 @@ export default function Dashboard() {
     },
   ];
 
+  const cardPaddingClass = dashboardDensity === "compact" ? "p-4" : "p-6";
+  const sectionGapClass = dashboardDensity === "compact" ? "gap-4" : "gap-8";
+  const dashboardSpaceClass =
+    dashboardDensity === "compact" ? "space-y-4" : "space-y-6";
+
   return (
-    <div className="space-y-6" ref={dashboardRef}>
+    <div className={`${dashboardSpaceClass}`} ref={dashboardRef}>
       <Joyride
         steps={tourSteps}
         run={runTour}
@@ -1091,20 +1104,48 @@ export default function Dashboard() {
       />
 
       {isOffline && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-medium animate-in fade-in slide-in-from-top-2">
-          <WifiOff size={18} />
-          Modo Offline: Você está sem conexão. Os dados não estão sendo
-          atualizados em tempo real.
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 text-amber-900 dark:text-amber-100 p-5 rounded-2xl flex flex-col sm:flex-row items-start gap-4 text-sm animate-in fade-in slide-in-from-top-2 shadow-sm mb-4">
+          <div className="bg-amber-100 dark:bg-amber-900/50 p-3 rounded-full shrink-0 text-amber-700 dark:text-amber-300">
+            <WifiOff size={24} />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-amber-900 dark:text-amber-100 text-base mb-1">
+              Modo Offline Ativado
+            </h3>
+            <p className="text-amber-800 dark:text-amber-200 mb-2">
+              Você está sem conexão com a internet no momento.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+              <div className="bg-white dark:bg-slate-900/60 p-3 rounded-xl border border-amber-100/50 dark:border-amber-700/30">
+                <span className="block font-semibold mb-1">✅ Disponível:</span>
+                <ul className="list-disc pl-4 space-y-0.5 opacity-90">
+                  <li>Visualização de dados salvos</li>
+                  <li>Consulta às últimas avaliações</li>
+                  <li>Leitura das dicas e insights</li>
+                </ul>
+              </div>
+              <div className="bg-white dark:bg-slate-900/60 p-3 rounded-xl border border-amber-100/50 dark:border-amber-700/30">
+                <span className="block font-semibold mb-1">
+                  ⏳ Aguardando conexão:
+                </span>
+                <ul className="list-disc pl-4 space-y-0.5 opacity-90">
+                  <li>Responder a avaliações</li>
+                  <li>Sincronizar novos dados do Google</li>
+                  <li>Gerar novas dicas com IA</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Header Info */}
       <div className="py-4 flex justify-between items-center relative">
         <div className="tour-welcome">
-          <h2 className="text-sm font-semibold tracking-widest text-gray-500 uppercase mb-1">
+          <h2 className="text-sm font-semibold tracking-widest text-gray-500 dark:text-gray-400 uppercase mb-1">
             Visão Geral
           </h2>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
             Bem-vindo,{" "}
             {user?.displayName
               ? user.displayName.split(" ")[0]
@@ -1124,7 +1165,7 @@ export default function Dashboard() {
                     ? "Desativar Resumo Semanal"
                     : "Agendar Resumo Semanal"
                 }
-                className={`w-12 h-12 border rounded-full flex items-center justify-center relative transition-colors shadow-sm disabled:opacity-50 ${isEmailScheduled ? "bg-blue-50 border-blue-200 hover:bg-blue-100" : "bg-white border-gray-200 hover:bg-gray-50"}`}
+                className={`w-12 h-12 border rounded-full flex items-center justify-center relative transition-colors shadow-sm disabled:opacity-50 ${isEmailScheduled ? "bg-blue-50 border-blue-200 hover:bg-blue-100" : "bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800/50 dark:bg-slate-950"}`}
               >
                 {isSchedulingEmail ? (
                   <div
@@ -1133,7 +1174,9 @@ export default function Dashboard() {
                 ) : (
                   <Mail
                     className={
-                      isEmailScheduled ? "text-blue-600" : "text-gray-600"
+                      isEmailScheduled
+                        ? "text-blue-600"
+                        : "text-gray-600 dark:text-gray-400"
                     }
                     size={20}
                   />
@@ -1143,24 +1186,30 @@ export default function Dashboard() {
                 onClick={generateCSV}
                 disabled={isGeneratingCsv}
                 title="Exportar Métricas para CSV"
-                className="w-12 h-12 bg-white border border-gray-200 rounded-full flex items-center justify-center relative hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50"
+                className="w-12 h-12 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-full flex items-center justify-center relative hover:bg-gray-50 dark:hover:bg-slate-800/50 dark:bg-slate-950 transition-colors shadow-sm disabled:opacity-50"
               >
                 {isGeneratingCsv ? (
                   <div className="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
                 ) : (
-                  <FileSpreadsheet className="text-gray-600" size={20} />
+                  <FileSpreadsheet
+                    className="text-gray-600 dark:text-gray-400"
+                    size={20}
+                  />
                 )}
               </button>
               <button
                 onClick={generatePDF}
                 disabled={isGeneratingPdf}
                 title="Gerar Relatório em PDF"
-                className="tour-pdf-button w-12 h-12 bg-white border border-gray-200 rounded-full flex items-center justify-center relative hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50"
+                className="tour-pdf-button w-12 h-12 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-full flex items-center justify-center relative hover:bg-gray-50 dark:hover:bg-slate-800/50 dark:bg-slate-950 transition-colors shadow-sm disabled:opacity-50"
               >
                 {isGeneratingPdf ? (
                   <div className="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
                 ) : (
-                  <Download className="text-gray-600" size={20} />
+                  <Download
+                    className="text-gray-600 dark:text-gray-400"
+                    size={20}
+                  />
                 )}
               </button>
             </div>
@@ -1168,9 +1217,9 @@ export default function Dashboard() {
 
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="tour-notifications-button w-12 h-12 bg-white border border-gray-200 rounded-full flex items-center justify-center relative hover:bg-gray-50 transition-colors shadow-sm"
+            className="tour-notifications-button w-12 h-12 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-full flex items-center justify-center relative hover:bg-gray-50 dark:hover:bg-slate-800/50 dark:bg-slate-950 transition-colors shadow-sm"
           >
-            <Bell className="text-gray-600" size={24} />
+            <Bell className="text-gray-600 dark:text-gray-400" size={24} />
             {unreadCount > 0 && (
               <span className="absolute top-2.5 right-2.5 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
             )}
@@ -1184,15 +1233,17 @@ export default function Dashboard() {
                 onClick={() => setShowNotifications(false)}
               ></div>
 
-              <div className="absolute right-0 top-14 w-80 sm:w-96 bg-white border border-gray-200 rounded-2xl shadow-xl z-50 overflow-hidden origin-top-right animate-in fade-in slide-in-from-top-2">
-                <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                  <h3 className="font-bold text-gray-900">Notificações</h3>
+              <div className="absolute right-0 top-14 w-80 sm:w-96 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-xl z-50 overflow-hidden origin-top-right animate-in fade-in slide-in-from-top-2">
+                <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50 dark:bg-slate-950">
+                  <h3 className="font-bold text-gray-900 dark:text-white">
+                    Notificações
+                  </h3>
                   {unreadCount > 0 ? (
                     <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-bold">
                       {unreadCount} novas
                     </span>
                   ) : (
-                    <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-full font-medium">
+                    <span className="text-xs bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400 px-2 py-1 rounded-full font-medium">
                       Lidas
                     </span>
                   )}
@@ -1202,7 +1253,7 @@ export default function Dashboard() {
                     notifications.map((notification) => (
                       <div
                         key={notification.id}
-                        className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors relative ${notification.read ? "opacity-60" : ""}`}
+                        className={`p-4 border-b border-gray-50 hover:bg-gray-50 dark:hover:bg-slate-800/50 dark:bg-slate-950 transition-colors relative ${notification.read ? "opacity-60" : ""}`}
                       >
                         {!notification.read && (
                           <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
@@ -1226,10 +1277,10 @@ export default function Dashboard() {
                             )}
                           </div>
                           <div>
-                            <h4 className="font-bold text-sm text-gray-900">
+                            <h4 className="font-bold text-sm text-gray-900 dark:text-white">
                               {notification.title}
                             </h4>
-                            <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
                               {notification.message}
                             </p>
                             <div className="flex items-center gap-3 mt-2">
@@ -1265,7 +1316,7 @@ export default function Dashboard() {
                               {!notification.read && (
                                 <button
                                   onClick={() => markAsRead(notification.id)}
-                                  className="text-xs text-gray-400 hover:text-gray-600 font-medium"
+                                  className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-400 font-medium"
                                 >
                                   Marcar como lida
                                 </button>
@@ -1276,7 +1327,7 @@ export default function Dashboard() {
                       </div>
                     ))
                   ) : (
-                    <div className="p-8 text-center text-gray-500 text-sm">
+                    <div className="p-8 text-center text-gray-500 dark:text-gray-400 text-sm">
                       <Bell size={24} className="mx-auto text-gray-300 mb-2" />
                       Nenhuma notificação no momento.
                     </div>
@@ -1290,13 +1341,13 @@ export default function Dashboard() {
 
       {/* AI Tip Banner */}
       {(aiTip || loadingTip) && (
-        <div className="bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-100 p-4 sm:p-5 rounded-2xl flex gap-4 items-start relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-100 dark:border-teal-800/50 p-4 sm:p-5 rounded-2xl flex gap-4 items-start relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
           <div className="absolute right-0 top-0 w-32 h-32 bg-teal-500 opacity-[0.03] rounded-bl-full pointer-events-none"></div>
-          <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 bg-teal-100 dark:bg-teal-900/50 rounded-full flex items-center justify-center shrink-0">
             <Sparkles size={20} className="text-teal-600" />
           </div>
           <div className="flex-1">
-            <h3 className="font-bold text-teal-900 text-sm mb-1">
+            <h3 className="font-bold text-teal-900 dark:text-teal-100 text-sm mb-1">
               Dica da IA (Histórico Recente)
             </h3>
             {loadingTip ? (
@@ -1312,16 +1363,16 @@ export default function Dashboard() {
 
       {/* Email Verification Warning */}
       {user && !user.emailVerified && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="bg-amber-100 text-amber-600 rounded-full p-2 shrink-0">
+            <div className="bg-amber-100 dark:bg-amber-900/50 text-amber-600 rounded-full p-2 shrink-0">
               <AlertTriangle size={20} />
             </div>
             <div>
-              <h3 className="font-bold text-amber-900 text-sm">
+              <h3 className="font-bold text-amber-900 dark:text-amber-100 text-sm">
                 Verifique seu e-mail
               </h3>
-              <p className="text-xs text-amber-800 mt-0.5">
+              <p className="text-xs text-amber-800 dark:text-amber-200 mt-0.5">
                 Para garantir a segurança da sua conta e habilitar todos os
                 recursos, por favor confirme seu endereço de e-mail.
               </p>
@@ -1344,7 +1395,7 @@ export default function Dashboard() {
           return (
             <div
               key={i}
-              className="min-w-[260px] bg-white border border-gray-200 rounded-2xl p-4 flex items-center gap-4 shrink-0 shadow-sm"
+              className="min-w-[260px] bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl p-4 flex items-center gap-4 shrink-0 shadow-sm"
             >
               <div
                 className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${feat.color}`}
@@ -1352,10 +1403,10 @@ export default function Dashboard() {
                 <Icon size={24} />
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 text-sm">
+                <h3 className="font-bold text-gray-900 dark:text-white text-sm">
                   {feat.title}
                 </h3>
-                <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed mt-0.5">
                   {feat.desc}
                 </p>
               </div>
@@ -1373,31 +1424,33 @@ export default function Dashboard() {
           items={layoutItems}
           strategy={verticalListSortingStrategy}
         >
-          <div className="flex flex-col gap-8">
+          <div className={`flex flex-col ${sectionGapClass}`}>
             {layoutItems.map((id) => {
               if (id === "metrics")
                 return (
                   <SortableItem key={id} id={id}>
                     {/* Metrics & Chart Section */}
-                    <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-sm overflow-hidden">
+                    <div
+                      className={`bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-slate-700 ${cardPaddingClass} shadow-sm overflow-hidden`}
+                    >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                         <div>
-                          <h3 className="text-lg font-bold text-gray-900">
+                          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                             Desempenho Geral
                           </h3>
-                          <p className="text-sm text-gray-500 mt-1">
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                             Acompanhe a evolução da sua reputação.
                           </p>
                         </div>
-                        <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-xl border border-gray-100">
+                        <div className="flex items-center gap-2 bg-gray-50 dark:bg-slate-950 p-1 rounded-xl border border-gray-100 dark:border-slate-800">
                           {[7, 30, 90].map((days) => (
                             <button
                               key={days}
                               onClick={() => setDateRange(days as 7 | 30 | 90)}
                               className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-colors ${
                                 dateRange === days
-                                  ? "bg-white text-blue-600 shadow-sm border border-gray-200"
-                                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                                  ? "bg-white dark:bg-slate-900 text-blue-600 shadow-sm border border-gray-200 dark:border-slate-700"
+                                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 dark:bg-slate-800"
                               }`}
                             >
                               {days} dias
@@ -1407,12 +1460,12 @@ export default function Dashboard() {
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex flex-col justify-center">
-                          <div className="text-sm text-gray-500 font-medium mb-1 flex items-center gap-2">
+                        <div className="bg-gray-50 dark:bg-slate-950 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 flex flex-col justify-center">
+                          <div className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1 flex items-center gap-2">
                             <Star size={16} className="text-gray-400" /> Nota
                             Média
                           </div>
-                          <div className="text-3xl font-bold text-gray-900">
+                          <div className="text-3xl font-bold text-gray-900 dark:text-white">
                             {dashboardMetrics.avgRating > 0
                               ? dashboardMetrics.avgRating.toFixed(1)
                               : "N/A"}
@@ -1421,27 +1474,27 @@ export default function Dashboard() {
                             nos últimos {dateRange} dias
                           </p>
                         </div>
-                        <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex flex-col justify-center">
-                          <div className="text-sm text-gray-500 font-medium mb-1 flex items-center gap-2">
+                        <div className="bg-gray-50 dark:bg-slate-950 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 flex flex-col justify-center">
+                          <div className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1 flex items-center gap-2">
                             <MessageSquareText
                               size={16}
                               className="text-gray-400"
                             />{" "}
                             Total de Avaliações
                           </div>
-                          <div className="text-3xl font-bold text-gray-900">
+                          <div className="text-3xl font-bold text-gray-900 dark:text-white">
                             {dashboardMetrics.totalReviews}
                           </div>
                           <p className="text-xs text-gray-400 mt-1">
                             nos últimos {dateRange} dias
                           </p>
                         </div>
-                        <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex flex-col justify-center">
-                          <div className="text-sm text-gray-500 font-medium mb-1 flex items-center gap-2">
+                        <div className="bg-gray-50 dark:bg-slate-950 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 flex flex-col justify-center">
+                          <div className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1 flex items-center gap-2">
                             <ExternalLink size={16} className="text-gray-400" />{" "}
                             Cliques no Site
                           </div>
-                          <div className="text-3xl font-bold text-gray-900">
+                          <div className="text-3xl font-bold text-gray-900 dark:text-white">
                             {dashboardMetrics.websiteClicks}
                           </div>
                           <p className="text-xs text-gray-400 mt-1">
@@ -1490,9 +1543,9 @@ export default function Dashboard() {
 
                             {loadingInsights ? (
                               <div className="animate-pulse space-y-4 max-w-2xl">
-                                <div className="h-6 bg-white/20 rounded-md w-3/4"></div>
-                                <div className="h-4 bg-white/10 rounded-md w-full"></div>
-                                <div className="h-4 bg-white/10 rounded-md w-5/6"></div>
+                                <div className="h-6 bg-white dark:bg-slate-900/20 rounded-md w-3/4"></div>
+                                <div className="h-4 bg-white dark:bg-slate-900/10 rounded-md w-full"></div>
+                                <div className="h-4 bg-white dark:bg-slate-900/10 rounded-md w-5/6"></div>
                               </div>
                             ) : smartInsights ? (
                               <div className="max-w-3xl">
@@ -1502,7 +1555,7 @@ export default function Dashboard() {
                                 <p className="text-indigo-100 text-sm md:text-base leading-relaxed mb-4">
                                   {smartInsights.insightText}
                                 </p>
-                                <div className="inline-block bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4">
+                                <div className="inline-block bg-white dark:bg-slate-900/10 backdrop-blur-md border border-white/20 rounded-xl p-4">
                                   <p className="text-sm font-semibold text-white mb-1 flex items-center gap-2">
                                     <TrendingUp
                                       size={16}
@@ -1524,7 +1577,7 @@ export default function Dashboard() {
                           </div>
 
                           <div className="hidden md:flex flex-col justify-center items-end shrink-0">
-                            <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center border border-white/20 backdrop-blur-sm">
+                            <div className="w-24 h-24 bg-white dark:bg-slate-900/10 rounded-full flex items-center justify-center border border-white/20 backdrop-blur-sm">
                               <TrendingUp size={40} className="text-white" />
                             </div>
                           </div>
@@ -1555,7 +1608,7 @@ export default function Dashboard() {
                             <div className="flex flex-col sm:flex-row gap-3">
                               <Link
                                 to="/conexao"
-                                className="bg-white text-purple-700 font-bold px-6 py-3.5 rounded-xl shadow-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                                className="bg-white dark:bg-slate-900 text-purple-700 font-bold px-6 py-3.5 rounded-xl shadow-sm hover:bg-gray-50 dark:hover:bg-slate-800/50 dark:bg-slate-950 transition-colors flex items-center justify-center gap-2"
                               >
                                 <Store size={20} />
                                 Conectar Conta Google
@@ -1564,16 +1617,16 @@ export default function Dashboard() {
                               <Link
                                 to="/dicas"
                                 state={{ openModuleId: 3 }}
-                                className="bg-white/20 hover:bg-white/30 text-white font-bold py-3.5 px-6 rounded-xl border border-white/30 transition-colors flex items-center justify-center text-center"
+                                className="bg-white dark:bg-slate-900/20 hover:bg-white dark:bg-slate-900/30 text-white font-bold py-3.5 px-6 rounded-xl border border-white/30 transition-colors flex items-center justify-center text-center"
                               >
                                 Ver Instruções
                               </Link>
                             </div>
                           </div>
-                          <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
+                          <div className="absolute -right-6 -top-6 w-32 h-32 bg-white dark:bg-slate-900/20 rounded-full blur-2xl"></div>
                         </div>
 
-                        <div className="bg-white/10 backdrop-blur-md p-6 sm:p-8 lg:w-80 border-t lg:border-t-0 lg:border-l border-white/20 flex flex-col justify-center">
+                        <div className="bg-white dark:bg-slate-900/10 backdrop-blur-md p-6 sm:p-8 lg:w-80 border-t lg:border-t-0 lg:border-l border-white/20 flex flex-col justify-center">
                           <h3 className="text-white font-bold text-lg mb-2">
                             Ainda não tem um Perfil?
                           </h3>
@@ -1600,13 +1653,15 @@ export default function Dashboard() {
               if (id === "quick_actions")
                 return (
                   <SortableItem key={id} id={id}>
-                    <div className="tour-quick-actions grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div
+                      className={`tour-quick-actions grid grid-cols-1 md:grid-cols-2 ${dashboardSpaceClass === "space-y-4" ? "gap-4" : "gap-6"}`}
+                    >
                       {/* Quick Actions */}
                       <Link
                         to="/diagnosis"
                         className="flex items-center gap-4 bg-purple-50 hover:bg-purple-100 transition-colors rounded-3xl p-5 border border-purple-100"
                       >
-                        <div className="w-12 h-12 bg-white text-purple-600 rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
+                        <div className="w-12 h-12 bg-white dark:bg-slate-900 text-purple-600 rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
                           <Sparkles size={24} />
                         </div>
                         <div className="flex-1">
@@ -1622,16 +1677,16 @@ export default function Dashboard() {
 
                       <Link
                         to="/qrcode"
-                        className="flex items-center gap-4 bg-teal-50 hover:bg-teal-100 transition-colors rounded-3xl p-5 border border-teal-100"
+                        className="flex items-center gap-4 bg-teal-50 dark:bg-teal-900/30 hover:bg-teal-100 dark:bg-teal-900/50 dark:hover:bg-teal-800/50 transition-colors rounded-3xl p-5 border border-teal-100 dark:border-teal-800/50"
                       >
-                        <div className="w-12 h-12 bg-white text-teal-600 rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
+                        <div className="w-12 h-12 bg-white dark:bg-slate-900 text-teal-600 rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
                           <QrCode size={24} />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-bold text-teal-900 text-sm">
+                          <h3 className="font-bold text-teal-900 dark:text-teal-100 text-sm">
                             QR Code de Avaliações
                           </h3>
-                          <p className="text-xs text-teal-700/70 mt-0.5">
+                          <p className="text-xs text-teal-700 dark:text-teal-300/70 mt-0.5">
                             Gere e compartilhe seu QR Code
                           </p>
                         </div>
@@ -1645,13 +1700,15 @@ export default function Dashboard() {
                 return (
                   <SortableItem key={id} id={id}>
                     {/* Quick Tips Carousel */}
-                    <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-sm overflow-hidden">
+                    <div
+                      className={`bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-slate-700 ${cardPaddingClass} shadow-sm overflow-hidden`}
+                    >
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <h3 className="text-lg font-bold text-gray-900">
+                          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                             Dicas Rápidas
                           </h3>
-                          <p className="text-sm text-gray-500 mt-1">
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                             Ações simples para melhorar seu posicionamento.
                           </p>
                         </div>
@@ -1685,7 +1742,8 @@ export default function Dashboard() {
                             desc: "Responder avaliações mostra que você valoriza seus clientes e ajuda a construir confiança com novos clientes.",
                             action: "Ver Avaliações",
                             link: "https://business.google.com/reviews",
-                            color: "bg-teal-50 border-teal-100 text-teal-900",
+                            color:
+                              "bg-teal-50 dark:bg-teal-900/30 border-teal-100 dark:border-teal-800/50 text-teal-900 dark:text-teal-100",
                             btnColor: "bg-teal-600 hover:bg-teal-700",
                           },
                         ].map((tip, idx) => (
@@ -1720,13 +1778,15 @@ export default function Dashboard() {
                 return (
                   <SortableItem key={id} id={id}>
                     {/* Recent Reviews Section */}
-                    <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
+                    <div
+                      className={`bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-slate-700 ${cardPaddingClass} shadow-sm`}
+                    >
                       <div className="flex items-center justify-between mb-6">
                         <div>
-                          <h3 className="text-lg font-bold text-gray-900">
+                          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                             Últimas Avaliações
                           </h3>
-                          <p className="text-sm text-gray-500 mt-1">
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                             Responda aos seus clientes e mostre que você se
                             importa.
                           </p>
@@ -1734,12 +1794,12 @@ export default function Dashboard() {
                       </div>
 
                       {!gmbConnected ? (
-                        <div className="text-center py-8 bg-gray-50 rounded-2xl border border-gray-100">
+                        <div className="text-center py-8 bg-gray-50 dark:bg-slate-950 rounded-2xl border border-gray-100 dark:border-slate-800">
                           <MessageSquareText
                             size={32}
                             className="mx-auto text-gray-300 mb-3"
                           />
-                          <p className="text-sm text-gray-500 max-w-sm mx-auto mb-4">
+                          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-4">
                             Conecte sua conta do Google para visualizar e
                             responder as avaliações dos seus clientes
                             diretamente daqui.
@@ -1758,6 +1818,76 @@ export default function Dashboard() {
                   </SortableItem>
                 );
 
+              if (id === "photos")
+                return (
+                  <SortableItem key={id} id={id}>
+                    <div
+                      className={`bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-slate-700 ${cardPaddingClass} shadow-sm`}
+                    >
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                            Fotos Recentes
+                          </h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            Últimas imagens publicadas no seu Perfil da Empresa.
+                          </p>
+                        </div>
+                      </div>
+
+                      {!gmbConnected ? (
+                        <div className="text-center py-8 bg-gray-50 dark:bg-slate-950 rounded-2xl border border-gray-100 dark:border-slate-800">
+                          <Camera
+                            size={32}
+                            className="mx-auto text-gray-300 mb-3"
+                          />
+                          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-4">
+                            Conecte sua conta para visualizar as fotos do seu
+                            perfil.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          {businessData?.media &&
+                          businessData.media.length > 0 ? (
+                            businessData.media
+                              .slice(0, 3)
+                              .map((mediaItem: any, index: number) => (
+                                <div
+                                  key={index}
+                                  className="aspect-square rounded-2xl overflow-hidden bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 relative group"
+                                >
+                                  {mediaItem.googleUrl ? (
+                                    <img
+                                      src={mediaItem.googleUrl}
+                                      alt={`Foto ${index + 1} do perfil`}
+                                      referrerPolicy="no-referrer"
+                                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                      <Camera size={32} />
+                                    </div>
+                                  )}
+                                </div>
+                              ))
+                          ) : (
+                            <div className="col-span-1 sm:col-span-3 text-center py-10 bg-gray-50 dark:bg-slate-950 rounded-2xl border border-gray-100 dark:border-slate-800">
+                              <Camera
+                                size={32}
+                                className="mx-auto text-gray-300 dark:text-gray-600 mb-3"
+                              />
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Nenhuma foto encontrada no seu perfil.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </SortableItem>
+                );
+
               return null;
             })}
           </div>
@@ -1766,7 +1896,7 @@ export default function Dashboard() {
 
       {/* Sync Status Footer */}
       {(gmbConnected || loading) && (
-        <div className="flex justify-center items-center gap-2 pt-2 pb-6 text-xs text-gray-500">
+        <div className="flex justify-center items-center gap-2 pt-2 pb-6 text-xs text-gray-500 dark:text-gray-400">
           {loading ? (
             <>
               <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
