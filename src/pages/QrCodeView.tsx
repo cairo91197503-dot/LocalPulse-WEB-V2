@@ -71,16 +71,20 @@ export default function QrCodeView() {
         ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
         ctx.drawImage(canvas, 20, 20);
         
-        const pngUrl = newCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
-        let downloadLink = document.createElement("a");
-        downloadLink.href = pngUrl;
-        downloadLink.download = "meu_qr_code_avaliacoes.png";
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        
-        if (analytics) {
-          logEvent(analytics, 'download_qr_code');
+        try {
+          const pngUrl = newCanvas.toDataURL("image/png");
+          let downloadLink = document.createElement("a");
+          downloadLink.href = pngUrl;
+          downloadLink.download = "meu_qr_code_avaliacoes.png";
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+          
+          if (analytics) {
+            logEvent(analytics, 'download_qr_code');
+          }
+        } catch (err) {
+          console.error("Erro no download", err);
         }
       }
     }
@@ -191,21 +195,26 @@ export default function QrCodeView() {
                 Pronto para imprimir
               </div>
 
-              <div className="flex flex-col sm:flex-row w-full max-w-sm gap-3">
-                <button 
-                  onClick={downloadQR}
-                  className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-gray-900 hover:bg-black text-white font-medium rounded-xl transition-all shadow-sm hover:shadow"
-                >
-                  <Download size={18} />
-                  Baixar Imagem
-                </button>
-                <button 
-                  onClick={() => setBusinessUrl("")}
-                  className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800/50 dark:bg-slate-950 text-gray-700 dark:text-gray-300 font-medium rounded-xl border border-gray-200 dark:border-slate-700 transition-colors"
-                >
-                  <RefreshCw size={18} />
-                  Alterar Link
-                </button>
+              <div className="flex flex-col w-full max-w-sm gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button 
+                    onClick={downloadQR}
+                    className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-gray-900 hover:bg-black text-white font-medium rounded-xl transition-all shadow-sm hover:shadow"
+                  >
+                    <Download size={18} />
+                    Baixar Imagem
+                  </button>
+                  <button 
+                    onClick={() => setBusinessUrl("")}
+                    className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800/50 dark:bg-slate-950 text-gray-700 dark:text-gray-300 font-medium rounded-xl border border-gray-200 dark:border-slate-700 transition-colors"
+                  >
+                    <RefreshCw size={18} />
+                    Alterar Link
+                  </button>
+                </div>
+                <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">
+                  Dica: Se o download não iniciar, tente abrir o app em uma <strong className="font-semibold text-gray-700 dark:text-gray-300">nova aba</strong> ou tire um print da tela.
+                </p>
               </div>
             </div>
           )}

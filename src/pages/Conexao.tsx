@@ -130,7 +130,7 @@ export default function Conexao() {
       try {
         const token = location._token;
         const reviewsRes = await fetch(
-          `https://mybusiness.googleapis.com/v4/${location.name}/reviews`,
+          `https://mybusinessreviews.googleapis.com/v1/${location.name}/reviews`,
           {
             headers: { Authorization: `Bearer ${token}` },
           },

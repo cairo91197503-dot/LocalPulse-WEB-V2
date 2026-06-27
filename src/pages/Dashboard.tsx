@@ -24,8 +24,15 @@ import {
   Camera,
 } from "lucide-react";
 import { Link } from "react-router";
-import { auth, db, messaging } from "../lib/firebase";
-import { sendEmailVerification } from "firebase/auth";
+import {
+  auth,
+  db,
+  messaging,
+  signInWithPopup,
+  analytics,
+} from "../lib/firebase";
+import { sendEmailVerification, GoogleAuthProvider } from "firebase/auth";
+import { logEvent } from "firebase/analytics";
 import { useGmbData } from "../hooks/useGmbData";
 import { getToken, onMessage } from "firebase/messaging";
 import { doc, setDoc, getDoc } from "firebase/firestore";
@@ -111,6 +118,10 @@ const PerformanceChart = memo(({ data }: { data: any[] }) => {
 const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
+  const [replyType, setReplyType] = useState<"manual" | "ai" | "template">(
+    "manual",
+  );
+  const [replyTemplateName, setReplyTemplateName] = useState<string>("");
 
   const [isGeneratingReply, setIsGeneratingReply] = useState(false);
 
@@ -158,6 +169,7 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
       const data = await response.json();
       if (response.ok) {
         setReplyText(data.reply);
+        setReplyType("ai");
         toast.success("Resposta gerada com IA!");
       } else {
         toast.error(
@@ -172,22 +184,62 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
     }
   };
 
-  const handleSendReply = () => {
+  const handleSendReply = async (review: any) => {
     if (!replyText.trim()) {
       toast.error("A resposta não pode estar vazia.");
       return;
     }
-    // Simulate API call
-    toast
-      .promise(new Promise((resolve) => setTimeout(resolve, 1500)), {
-        loading: "Enviando resposta via API...",
-        success: "Resposta enviada com sucesso!",
-        error: "Erro ao enviar resposta.",
-      })
-      .then(() => {
-        setReplyingTo(null);
-        setReplyText("");
-      });
+
+    const toastId = toast.loading("Enviando resposta...");
+
+    try {
+      // Get a fresh token
+      const provider = new GoogleAuthProvider();
+      provider.addScope("https://www.googleapis.com/auth/business.manage");
+      const result = await signInWithPopup(auth, provider);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential?.accessToken;
+
+      if (!token) {
+        toast.error("Não foi possível obter o token de acesso.", {
+          id: toastId,
+        });
+        return;
+      }
+
+      const res = await fetch(
+        `https://mybusinessreviews.googleapis.com/v1/${review.name}/reply`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ comment: replyText }),
+        },
+      );
+
+      if (!res.ok) {
+        throw new Error("Erro na API do Google");
+      }
+
+      if (analytics) {
+        logEvent(analytics, "reply_sent", {
+          reply_type: replyType,
+          template_name:
+            replyType === "template" ? replyTemplateName : undefined,
+        });
+      }
+
+      toast.success("Resposta enviada com sucesso!", { id: toastId });
+      setReplyingTo(null);
+      setReplyText("");
+      setReplyType("manual");
+      setReplyTemplateName("");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao enviar resposta.", { id: toastId });
+    }
   };
 
   return (
@@ -293,7 +345,11 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
                   {templates.map((tpl, idx) => (
                     <button
                       key={idx}
-                      onClick={() => setReplyText(tpl.text)}
+                      onClick={() => {
+                        setReplyText(tpl.text);
+                        setReplyType("template");
+                        setReplyTemplateName(tpl.label);
+                      }}
                       className="shrink-0 text-xs font-medium bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 hover:border-teal-300 hover:bg-teal-50 dark:hover:bg-teal-900/40 dark:bg-teal-900/30 text-gray-600 dark:text-gray-400 px-3 py-1.5 rounded-full transition-colors"
                     >
                       {tpl.label}
@@ -303,7 +359,11 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
 
                 <textarea
                   value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
+                  onChange={(e) => {
+                    setReplyText(e.target.value);
+                    setReplyType("manual");
+                    setReplyTemplateName("");
+                  }}
                   placeholder="Escreva sua resposta..."
                   className="w-full h-24 p-3 text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none resize-none mb-3"
                 />
@@ -316,7 +376,7 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
                     Cancelar
                   </button>
                   <button
-                    onClick={handleSendReply}
+                    onClick={() => handleSendReply(review)}
                     disabled={!replyText.trim()}
                     className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors"
                   >
@@ -863,10 +923,11 @@ export default function Dashboard() {
           // Request permission
           const permission = await Notification.requestPermission();
           if (permission === "granted") {
-            const token = await getToken(messaging, {
-              vapidKey:
-                "BPr7sD0Dq6s4Uf2xN9Hq6g3Z2V9W7Y2X0R4T1Q8M6N5P3L0K7J4H1F8E5C2A9B6", // Optional: Replace with actual VAPID key if you have one
-            });
+            const tokenOptions: any = {};
+            if ((import.meta as any).env.VITE_VAPID_KEY) {
+              tokenOptions.vapidKey = (import.meta as any).env.VITE_VAPID_KEY;
+            }
+            const token = await getToken(messaging, tokenOptions);
             if (token) {
               await setDoc(
                 doc(db, "users", user.uid),
