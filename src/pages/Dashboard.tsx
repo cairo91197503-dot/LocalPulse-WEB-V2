@@ -484,7 +484,6 @@ export default function Dashboard() {
     "insights",
     "connection",
     "quick_actions",
-    "quick_tips",
     "recent_reviews",
     "photos",
   ];
@@ -793,7 +792,8 @@ export default function Dashboard() {
               setDashboardDensity(userDoc.data().dashboardDensity);
             }
             if (userDoc.data().dashboardLayout) {
-              const savedLayout = userDoc.data().dashboardLayout;
+              let savedLayout = userDoc.data().dashboardLayout;
+              savedLayout = savedLayout.filter((item: string) => item !== "quick_tips");
               // Ensure all default items exist in saved layout (in case we add new features later)
               const missingItems = DEFAULT_LAYOUT.filter(
                 (item) => !savedLayout.includes(item),
@@ -1507,84 +1507,6 @@ export default function Dashboard() {
                         </div>
                         <ArrowRight size={20} className="text-teal-400" />
                       </Link>
-                    </div>
-                  </SortableItem>
-                );
-
-              if (id === "quick_tips")
-                return (
-                  <SortableItem key={id} id={id}>
-                    {/* Quick Tips Carousel */}
-                    <div
-                      className={`bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-slate-700 ${cardPaddingClass} shadow-sm overflow-hidden`}
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                            Dicas Rápidas
-                          </h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                            Ações simples para melhorar seu posicionamento.
-                          </p>
-                        </div>
-                        <Sparkles
-                          className="text-blue-500 hidden sm:block"
-                          size={24}
-                        />
-                      </div>
-
-                      <div className="flex overflow-x-auto gap-4 pb-4 -mx-6 px-6 hide-scrollbar snap-x">
-                        {[
-                          {
-                            title: "Adicione fotos recentes",
-                            desc: "Perfis com fotos recebem 42% mais solicitações de rotas. Poste fotos do seu espaço, produtos ou equipe.",
-                            action: "Adicionar Fotos",
-                            link: "https://business.google.com/photos",
-                            color: "bg-blue-50 border-blue-100 text-blue-900",
-                            btnColor: "bg-blue-600 hover:bg-blue-700",
-                          },
-                          {
-                            title: "Atualize horários especiais",
-                            desc: "Feriados se aproximando? Mantenha seus clientes informados sobre mudanças no horário de funcionamento.",
-                            action: "Atualizar Horários",
-                            link: "https://business.google.com/edit/info",
-                            color:
-                              "bg-purple-50 border-purple-100 text-purple-900",
-                            btnColor: "bg-purple-600 hover:bg-purple-700",
-                          },
-                          {
-                            title: "Responda avaliações",
-                            desc: "Responder avaliações mostra que você valoriza seus clientes e ajuda a construir confiança com novos clientes.",
-                            action: "Ver Avaliações",
-                            link: "https://business.google.com/reviews",
-                            color:
-                              "bg-teal-50 dark:bg-teal-900/30 border-teal-100 dark:border-teal-800/50 text-teal-900 dark:text-teal-100",
-                            btnColor: "bg-teal-600 hover:bg-teal-700",
-                          },
-                        ].map((tip, idx) => (
-                          <div
-                            key={idx}
-                            className={`min-w-[280px] sm:min-w-[320px] p-5 rounded-2xl border ${tip.color} flex flex-col justify-between shrink-0 snap-center`}
-                          >
-                            <div>
-                              <h4 className="font-bold text-base mb-2">
-                                {tip.title}
-                              </h4>
-                              <p className="text-sm opacity-80 mb-4">
-                                {tip.desc}
-                              </p>
-                            </div>
-                            <a
-                              href={tip.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={`text-white font-bold text-sm py-2 px-4 rounded-xl text-center transition-colors inline-block ${tip.btnColor}`}
-                            >
-                              {tip.action}
-                            </a>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   </SortableItem>
                 );
