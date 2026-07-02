@@ -54,7 +54,6 @@ export default function Conexao() {
   const loginGoogle = useGoogleLogin({
     flow: 'auth-code',
     scope: 'https://www.googleapis.com/auth/business.manage',
-    prompt: 'consent',
     onSuccess: async (codeResponse) => {
       if (!user) return;
       setIsConnecting(true);

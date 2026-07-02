@@ -10,11 +10,9 @@ import {
   Store,
   Star,
   ExternalLink,
-  Bell,
   Download,
   AlertTriangle,
   CalendarDays,
-  Trophy,
   FileSpreadsheet,
   Mail,
   Send,
@@ -23,12 +21,11 @@ import {
   GripVertical,
   Camera,
 } from "lucide-react";
-import { Link } from "react-router";
-import { auth, db, messaging, analytics } from "../lib/firebase";
+import { useNavigate, Link } from "react-router";
+import { auth, db, analytics } from "../lib/firebase";
 import { sendEmailVerification } from "firebase/auth";
 import { logEvent } from "firebase/analytics";
 import { useGmbData } from "../hooks/useGmbData";
-import { getToken, onMessage } from "firebase/messaging";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { jsPDF } from "jspdf";
 import toast from "react-hot-toast";
@@ -473,6 +470,14 @@ export default function Dashboard() {
   const [aiTip, setAiTip] = useState<string | null>(null);
   const [loadingTip, setLoadingTip] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !gmbConnected) {
+      navigate('/conexao');
+    }
+  }, [loading, gmbConnected, navigate]);
 
   const DEFAULT_LAYOUT = [
     "metrics",
@@ -941,203 +946,7 @@ export default function Dashboard() {
     }
   };
 
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
 
-  useEffect(() => {
-    const setupMessaging = async () => {
-      if (messaging && user) {
-        try {
-          // Request permission
-          const permission = await Notification.requestPermission();
-          if (permission === "granted") {
-            const tokenOptions: any = {};
-            if ((import.meta as any).env.VITE_VAPID_KEY) {
-              tokenOptions.vapidKey = (import.meta as any).env.VITE_VAPID_KEY;
-            }
-            const token = await getToken(messaging, tokenOptions);
-            if (token) {
-              await setDoc(
-                doc(db, "users", user.uid),
-                { fcmToken: token },
-                { merge: true },
-              );
-            }
-          }
-        } catch (error) {
-          console.error("Error setting up Firebase Messaging:", error);
-        }
-
-        // Listen for foreground messages
-        onMessage(messaging, (payload) => {
-          setNotifications((prev) => [
-            {
-              id: Date.now(),
-              type: "push",
-              title: payload.notification?.title || "Nova Notificação",
-              message: payload.notification?.body || "",
-              read: false,
-              link: payload.data?.link || "https://business.google.com/reviews",
-            },
-            ...prev,
-          ]);
-        });
-      }
-    };
-
-    setupMessaging();
-  }, [user]);
-
-  useEffect(() => {
-    if (
-      businessData &&
-      businessData.reviews &&
-      businessData.reviews.length > 0
-    ) {
-      // Cria uma notificação baseada na última avaliação (apenas como exemplo real)
-      const latestReview = businessData.reviews[0];
-      setNotifications([
-        {
-          id: latestReview.reviewId || 1,
-          type: "review",
-          title: "Nova avaliação recebida!",
-          message: `Você recebeu uma avaliação de ${latestReview.reviewer?.displayName || "Cliente"}. Responda para melhorar seu engajamento.`,
-          read: false,
-          link: "https://business.google.com/reviews",
-        },
-      ]);
-    } else {
-      setNotifications([]);
-    }
-  }, [businessData]);
-
-  // Review Notification Watcher
-  const prevReviewsLengthRef = useRef<number>(0);
-
-  useEffect(() => {
-    if (businessData && businessData.reviews && user) {
-      const currentLength = businessData.reviews.length;
-      const prevLength = prevReviewsLengthRef.current;
-
-      if (prevLength > 0 && currentLength > prevLength) {
-        // Novas avaliações detectadas
-        const newReviewsCount = currentLength - prevLength;
-        const latestReview = businessData.reviews[0]; // Assumindo que a mais recente está no índice 0
-
-        const payload = {
-          notification: {
-            title: "Nova Avaliação Recebida! ⭐",
-            body: latestReview
-              ? `${latestReview.reviewer.displayName} deixou uma avaliação de ${latestReview.starRating} estrelas.`
-              : `Você recebeu ${newReviewsCount} nova(s) avaliação(ões).`,
-          },
-          data: {
-            link: "https://business.google.com/reviews",
-          },
-        };
-
-        // Disparar Notificação Push (FCM Frontend / Browser API)
-        if ("Notification" in window && Notification.permission === "granted") {
-          new Notification(payload.notification.title, {
-            body: payload.notification.body,
-            icon: "/vite.svg",
-            data: payload.data,
-          });
-        }
-
-        // Adicionar na central de notificações in-app
-        setNotifications((prev) => [
-          {
-            id: Date.now() + Math.floor(Math.random() * 1000),
-            type: "review",
-            title: payload.notification.title,
-            message: payload.notification.body,
-            read: false,
-            link: payload.data.link,
-          },
-          ...prev,
-        ]);
-
-        toast.success(payload.notification.title, {
-          icon: "⭐",
-        });
-      }
-
-      prevReviewsLengthRef.current = currentLength;
-    }
-  }, [businessData, user]);
-
-  // Custom Goal Notifications
-  useEffect(() => {
-    const checkMilestones = async () => {
-      if (businessData && businessData.totalReviews && user) {
-        // Exemplo de Meta Personalizada: 100 Avaliações
-        const TARGET_REVIEWS = 100;
-
-        if (businessData.totalReviews >= TARGET_REVIEWS) {
-          const milestoneKey = `fcm_milestone_${TARGET_REVIEWS}_reviews_${businessData.name || "default"}`;
-          const hasReachedMilestone = localStorage.getItem(milestoneKey);
-
-          if (!hasReachedMilestone) {
-            localStorage.setItem(milestoneKey, "true");
-
-            // Payload simulando notificação FCM
-            const payload = {
-              notification: {
-                title: "Meta Atingida! 🎉",
-                body: `Parabéns! Sua empresa alcançou a marca incrível de ${TARGET_REVIEWS} avaliações.`,
-              },
-              data: {
-                link: "https://business.google.com/reviews",
-              },
-            };
-
-            // Disparar Notificação Push (FCM Frontend / Browser API)
-            if (
-              "Notification" in window &&
-              Notification.permission === "granted"
-            ) {
-              new Notification(payload.notification.title, {
-                body: payload.notification.body,
-                icon: "/vite.svg",
-                data: payload.data,
-              });
-            }
-
-            // Adicionar também na central de notificações in-app
-            setNotifications((prev) => [
-              {
-                id: Date.now() + Math.floor(Math.random() * 1000),
-                type: "milestone",
-                title: payload.notification.title,
-                message: payload.notification.body,
-                read: false,
-                link: payload.data.link,
-              },
-              ...prev,
-            ]);
-
-            toast.success(
-              `Incrível! Você bateu a meta de ${TARGET_REVIEWS} avaliações! 🏆`,
-              {
-                duration: 5000,
-                icon: "🚀",
-              },
-            );
-          }
-        }
-      }
-    };
-    checkMilestones();
-  }, [businessData, user]);
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
-  const markAsRead = (id: number) => {
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    );
-  };
 
   const features = [
     {
@@ -1302,128 +1111,6 @@ export default function Dashboard() {
                 )}
               </button>
             </div>
-          )}
-
-          <button
-            onClick={() => setShowNotifications(!showNotifications)}
-            className="tour-notifications-button w-12 h-12 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-full flex items-center justify-center relative hover:bg-gray-50 dark:hover:bg-slate-800/50 dark:bg-slate-950 transition-colors shadow-sm"
-          >
-            <Bell className="text-gray-600 dark:text-gray-400" size={24} />
-            {unreadCount > 0 && (
-              <span className="absolute top-2.5 right-2.5 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
-            )}
-          </button>
-
-          {showNotifications && (
-            <>
-              {/* Click outside backdrop */}
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowNotifications(false)}
-              ></div>
-
-              <div className="absolute right-0 top-14 w-80 sm:w-96 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-xl z-50 overflow-hidden origin-top-right animate-in fade-in slide-in-from-top-2">
-                <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50 dark:bg-slate-950">
-                  <h3 className="font-bold text-gray-900 dark:text-white">
-                    Notificações
-                  </h3>
-                  {unreadCount > 0 ? (
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-bold">
-                      {unreadCount} novas
-                    </span>
-                  ) : (
-                    <span className="text-xs bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400 px-2 py-1 rounded-full font-medium">
-                      Lidas
-                    </span>
-                  )}
-                </div>
-                <div className="max-h-80 overflow-y-auto">
-                  {notifications.length > 0 ? (
-                    notifications.map((notification) => (
-                      <div
-                        key={notification.id}
-                        className={`p-4 border-b border-gray-50 hover:bg-gray-50 dark:hover:bg-slate-800/50 dark:bg-slate-950 transition-colors relative ${notification.read ? "opacity-60" : ""}`}
-                      >
-                        {!notification.read && (
-                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
-                        )}
-                        <div className="flex gap-3">
-                          <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                              notification.type === "review"
-                                ? "bg-yellow-100 text-yellow-600"
-                                : notification.type === "milestone"
-                                  ? "bg-green-100 text-green-600"
-                                  : "bg-purple-100 text-purple-600"
-                            }`}
-                          >
-                            {notification.type === "review" ? (
-                              <Star size={18} className="fill-yellow-500" />
-                            ) : notification.type === "milestone" ? (
-                              <Trophy size={18} className="text-green-500" />
-                            ) : (
-                              <Sparkles size={18} />
-                            )}
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-sm text-gray-900 dark:text-white">
-                              {notification.title}
-                            </h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
-                              {notification.message}
-                            </p>
-                            <div className="flex items-center gap-3 mt-2">
-                              {notification.type === "review" ? (
-                                <a
-                                  href={notification.link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                                  onClick={() => markAsRead(notification.id)}
-                                >
-                                  Ver Avaliação <ExternalLink size={12} />
-                                </a>
-                              ) : notification.type === "milestone" ? (
-                                <a
-                                  href={notification.link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                                  onClick={() => markAsRead(notification.id)}
-                                >
-                                  Comemorar <ExternalLink size={12} />
-                                </a>
-                              ) : (
-                                <Link
-                                  to={notification.link}
-                                  className="text-xs font-bold text-blue-600 hover:text-blue-700"
-                                  onClick={() => markAsRead(notification.id)}
-                                >
-                                  Ver Dica
-                                </Link>
-                              )}
-                              {!notification.read && (
-                                <button
-                                  onClick={() => markAsRead(notification.id)}
-                                  className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-400 font-medium"
-                                >
-                                  Marcar como lida
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-8 text-center text-gray-500 dark:text-gray-400 text-sm">
-                      <Bell size={24} className="mx-auto text-gray-300 mb-2" />
-                      Nenhuma notificação no momento.
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
           )}
         </div>
       </div>
