@@ -14,8 +14,8 @@ async function startServer() {
   app.post("/api/auth/google/exchange", async (req, res) => {
     try {
       const { code, redirectUri } = req.body;
-      const clientId = process.env.GOOGLE_CLIENT_ID;
-      const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+      const clientId = (process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || "").replace(/\s+/g, '');
+      const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || "").replace(/\s+/g, '');
 
       if (!clientId || !clientSecret) {
         return res.status(500).json({ error: "Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET" });
@@ -34,8 +34,8 @@ async function startServer() {
   app.post("/api/auth/google/refresh", async (req, res) => {
     try {
       const { refresh_token } = req.body;
-      const clientId = process.env.GOOGLE_CLIENT_ID;
-      const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+      const clientId = (process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || "").replace(/\s+/g, '');
+      const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || "").replace(/\s+/g, '');
 
       if (!clientId || !clientSecret) {
         return res.status(500).json({ error: "Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET" });

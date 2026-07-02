@@ -577,7 +577,7 @@ export default function Conexao() {
               ? `Sim (${(import.meta as any).env.VITE_GOOGLE_CLIENT_ID.substring(0, 10)}...${(import.meta as any).env.VITE_GOOGLE_CLIENT_ID.slice(-4)}) - Length: ${(import.meta as any).env.VITE_GOOGLE_CLIENT_ID.length}` 
               : "Não (Vazio)"
           }</p>
-          <p className="mb-2 text-gray-500">Se o Client ID estiver com espaços no final, ele foi corrigido automaticamente nesta versão.</p>
+          <p className="mb-2 text-gray-500">O sistema limpa automaticamente espaços em branco e quebras de linha das chaves.</p>
           <p className="mb-2"><strong>Status:</strong> {gmbConnected ? "Conectado" : "Não conectado"}</p>
           <p>Se você continuar recebendo erro 401 (invalid_client), verifique se o Client ID listado acima corresponde exatamente ao Client ID do tipo "Aplicativo da Web" no Google Cloud Console.</p>
         </div>

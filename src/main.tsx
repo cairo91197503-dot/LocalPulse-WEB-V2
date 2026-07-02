@@ -10,7 +10,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
       <ThemeProvider>
-        <GoogleOAuthProvider clientId={(import.meta as any).env.VITE_GOOGLE_CLIENT_ID || ""}>
+        <GoogleOAuthProvider clientId={((import.meta as any).env.VITE_GOOGLE_CLIENT_ID || "").replace(/\s+/g, '')}>
           <App />
         </GoogleOAuthProvider>
       </ThemeProvider>
