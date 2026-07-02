@@ -2,12 +2,90 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
+import { OAuth2Client } from "google-auth-library";
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
   app.use(express.json());
+
+  // OAuth endpoints for GBP API
+  app.post("/api/auth/google/exchange", async (req, res) => {
+    try {
+      const { code, redirectUri } = req.body;
+      const clientId = process.env.GOOGLE_CLIENT_ID;
+      const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+      if (!clientId || !clientSecret) {
+        return res.status(500).json({ error: "Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET" });
+      }
+
+      const client = new OAuth2Client(clientId, clientSecret, redirectUri || 'postmessage');
+      const { tokens } = await client.getToken(code);
+      
+      res.json(tokens);
+    } catch (error: any) {
+      console.error("Exchange error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/auth/google/refresh", async (req, res) => {
+    try {
+      const { refresh_token } = req.body;
+      const clientId = process.env.GOOGLE_CLIENT_ID;
+      const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+      if (!clientId || !clientSecret) {
+        return res.status(500).json({ error: "Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET" });
+      }
+
+      const client = new OAuth2Client(clientId, clientSecret);
+      client.setCredentials({ refresh_token });
+      
+      const { credentials } = await client.refreshAccessToken();
+      res.json(credentials);
+    } catch (error: any) {
+      console.error("Refresh error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Proxy Endpoint for Sending Review Replies
+  app.post("/api/reviews/reply", async (req, res) => {
+    try {
+      const { token, reviewName, comment } = req.body;
+      
+      if (!token || !reviewName || !comment) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const response = await fetch(
+        `https://mybusinessreviews.googleapis.com/v1/${reviewName}/reply`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ comment }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        console.error("Google API Error:", errorData);
+        throw new Error("Erro na API do Google");
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error: any) {
+      console.error("Reply error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
 
   // AI API Route
   app.post("/api/diagnosis", async (req, res) => {

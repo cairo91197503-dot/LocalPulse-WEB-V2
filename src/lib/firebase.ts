@@ -4,8 +4,18 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { getAnalytics, isSupported } from 'firebase/analytics';
 import { getMessaging, isSupported as isMessagingSupported } from 'firebase/messaging';
 
-// This will be populated by the set_up_firebase tool, or you can replace it with your config.
-import firebaseConfig from '../../firebase-applet-config.json';
+import firebaseConfigFallback from '../../firebase-applet-config.json';
+
+const env = (import.meta as any).env;
+
+const firebaseConfig = env.VITE_FIREBASE_API_KEY ? {
+  apiKey: env.VITE_FIREBASE_API_KEY,
+  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: env.VITE_FIREBASE_APP_ID,
+} : firebaseConfigFallback;
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);

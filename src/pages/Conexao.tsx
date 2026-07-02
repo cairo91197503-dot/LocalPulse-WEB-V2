@@ -8,10 +8,10 @@ import {
   ExternalLink,
   Info,
 } from "lucide-react";
-import { auth, db, signInWithPopup } from "../lib/firebase";
+import { auth, db } from "../lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { GoogleAuthProvider } from "firebase/auth";
 import toast from "react-hot-toast";
+import { useGoogleLogin } from "@react-oauth/google";
 
 export default function Conexao() {
   const user = auth.currentUser;
@@ -24,6 +24,7 @@ export default function Conexao() {
   const [selectedLocationName, setSelectedLocationName] = useState<
     string | null
   >(null);
+  const [showDisconnectModal, setShowDisconnectModal] = useState(false);
 
   const [businessData, setBusinessData] = useState<any>(null);
 
@@ -50,67 +51,88 @@ export default function Conexao() {
     fetchStatus();
   }, [user]);
 
-  const handleConnectGoogle = async () => {
-    if (!user) return;
-    setIsConnecting(true);
-    const toastId = toast.loading("Conectando ao Google...");
-    try {
-      const provider = new GoogleAuthProvider();
-      provider.addScope("https://www.googleapis.com/auth/business.manage");
-      const result = await signInWithPopup(auth, provider);
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      const token = credential?.accessToken;
+  const loginGoogle = useGoogleLogin({
+    flow: 'auth-code',
+    scope: 'https://www.googleapis.com/auth/business.manage',
+    prompt: 'consent',
+    onSuccess: async (codeResponse) => {
+      if (!user) return;
+      setIsConnecting(true);
+      const toastId = toast.loading("Conectando ao Google...");
+      try {
+        // Exchange code for tokens
+        const exchangeRes = await fetch("/api/auth/google/exchange", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: codeResponse.code, redirectUri: 'postmessage' }),
+        });
 
-      if (token) {
-        // Fetch accounts
-        const accountsRes = await fetch(
-          "https://mybusinessaccountmanagement.googleapis.com/v1/accounts",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-        const accountsData = await accountsRes.json();
-        const fetchedAccounts = accountsData.accounts || [];
-        setAccounts(fetchedAccounts);
+        if (!exchangeRes.ok) throw new Error("Erro na troca de código OAuth.");
+        const tokens = await exchangeRes.json();
+        const { access_token, refresh_token } = tokens;
 
-        // Fetch locations for all accounts
-        let allLocations: any[] = [];
-        for (const account of fetchedAccounts) {
-          const locationsRes = await fetch(
-            `https://mybusinessbusinessinformation.googleapis.com/v1/${account.name}/locations?readMask=name,title,metadata,profile,languageCode,storeCode`,
+        // Save refresh token to Firestore
+        if (refresh_token) {
+          await setDoc(doc(db, "users", user.uid), { gmbRefreshToken: refresh_token }, { merge: true });
+        }
+
+        if (access_token) {
+          // Fetch accounts
+          const accountsRes = await fetch(
+            "https://mybusinessaccountmanagement.googleapis.com/v1/accounts",
             {
-              headers: { Authorization: `Bearer ${token}` },
+              headers: { Authorization: `Bearer ${access_token}` },
             },
           );
-          const locationsData = await locationsRes.json();
-          if (locationsData.locations) {
-            allLocations = [
-              ...allLocations,
-              ...locationsData.locations.map((loc: any) => ({
-                ...loc,
-                _account: account,
-                _token: token,
-              })),
-            ];
+          const accountsData = await accountsRes.json();
+          const fetchedAccounts = accountsData.accounts || [];
+          setAccounts(fetchedAccounts);
+
+          // Fetch locations for all accounts
+          let allLocations: any[] = [];
+          for (const account of fetchedAccounts) {
+            const locationsRes = await fetch(
+              `https://mybusinessbusinessinformation.googleapis.com/v1/${account.name}/locations?readMask=name,title,metadata,profile,languageCode,storeCode`,
+              {
+                headers: { Authorization: `Bearer ${access_token}` },
+              },
+            );
+            const locationsData = await locationsRes.json();
+            if (locationsData.locations) {
+              allLocations = [
+                ...allLocations,
+                ...locationsData.locations.map((loc: any) => ({
+                  ...loc,
+                  _account: account,
+                  _token: access_token, // Temporary token just for fetching initial data
+                })),
+              ];
+            }
           }
+          setLocations(allLocations);
+          toast.success("Contas encontradas com sucesso!", { id: toastId });
         }
-        setLocations(allLocations);
-        toast.success("Contas encontradas com sucesso!", { id: toastId });
-      } else {
-        toast.error("Não foi possível obter a credencial do Google.", {
-          id: toastId,
-        });
-      }
-    } catch (err: any) {
-      console.error(err);
-      if (err.code !== "auth/popup-closed-by-user") {
+      } catch (err: any) {
+        console.error(err);
         toast.error("Erro ao conectar com Google.", { id: toastId });
-      } else {
-        toast.dismiss(toastId);
+      } finally {
+        setIsConnecting(false);
       }
-    } finally {
+    },
+    onError: (error) => {
+      console.error(error);
       setIsConnecting(false);
+      toast.error("Login com Google falhou.");
     }
+  });
+
+  const handleConnectGoogle = async () => {
+    if (!user) return;
+    if (!(import.meta as any).env.VITE_GOOGLE_CLIENT_ID) {
+      toast.error("Configure o VITE_GOOGLE_CLIENT_ID no arquivo .env");
+      return;
+    }
+    loginGoogle();
   };
 
   const handleSelectLocation = async (location: any) => {
@@ -143,7 +165,8 @@ export default function Conexao() {
         console.error("Error fetching reviews:", reviewErr);
       }
 
-      // Fetch media
+      // Fetch media (Deprecated v4 removed as per instruction)
+      /*
       try {
         const token = location._token;
         const mediaRes = await fetch(
@@ -159,6 +182,7 @@ export default function Conexao() {
       } catch (mediaErr) {
         console.error("Error fetching media:", mediaErr);
       }
+      */
 
       const cleanLocation = { ...location };
       delete cleanLocation._token; // Do not save token to DB
@@ -184,10 +208,17 @@ export default function Conexao() {
     }
   };
 
+  const handleDisconnectClick = () => {
+    setShowDisconnectModal(true);
+  };
+
+  const cancelDisconnect = () => {
+    setShowDisconnectModal(false);
+  };
+
   const handleDisconnect = async () => {
+    setShowDisconnectModal(false);
     if (!user) return;
-    if (!window.confirm("Tem certeza que deseja desconectar seu perfil?"))
-      return;
 
     setIsConnecting(true);
     const toastId = toast.loading("Desconectando...");
@@ -301,7 +332,7 @@ export default function Conexao() {
           <div>
             {(locations.length > 0 || gmbConnected) && (
               <button
-                onClick={handleDisconnect}
+                onClick={handleDisconnectClick}
                 disabled={isConnecting}
                 className="bg-red-50 dark:bg-red-900/20 text-red-600 hover:bg-red-100 font-bold py-2.5 px-5 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 whitespace-nowrap"
               >
@@ -456,6 +487,34 @@ export default function Conexao() {
           </div>
         )}
       </div>
+
+      {/* Disconnect Confirmation Modal */}
+      {showDisconnectModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-sm p-6 shadow-xl">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              Desconectar perfil
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              Tem certeza que deseja desconectar seu Perfil da Empresa do Google? Você precisará vinculá-lo novamente para continuar usando os recursos integrados.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={cancelDisconnect}
+                className="flex-1 py-3 px-4 rounded-xl font-medium text-gray-700 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDisconnect}
+                className="flex-1 py-3 px-4 rounded-xl font-medium text-white bg-red-600 hover:bg-red-700 transition-colors"
+              >
+                Desconectar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -24,14 +24,8 @@ import {
   Camera,
 } from "lucide-react";
 import { Link } from "react-router";
-import {
-  auth,
-  db,
-  messaging,
-  signInWithPopup,
-  analytics,
-} from "../lib/firebase";
-import { sendEmailVerification, GoogleAuthProvider } from "firebase/auth";
+import { auth, db, messaging, analytics } from "../lib/firebase";
+import { sendEmailVerification } from "firebase/auth";
 import { logEvent } from "firebase/analytics";
 import { useGmbData } from "../hooks/useGmbData";
 import { getToken, onMessage } from "firebase/messaging";
@@ -193,12 +187,34 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
     const toastId = toast.loading("Enviando resposta...");
 
     try {
-      // Get a fresh token
-      const provider = new GoogleAuthProvider();
-      provider.addScope("https://www.googleapis.com/auth/business.manage");
-      const result = await signInWithPopup(auth, provider);
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      const token = credential?.accessToken;
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+      const refreshToken = userDoc.data()?.gmbRefreshToken;
+
+      if (!refreshToken) {
+        toast.error(
+          "Por favor, reconecte sua conta do Google na página de Configurações.",
+          { id: toastId },
+        );
+        return;
+      }
+
+      // Get fresh access token using refresh token
+      const refreshRes = await fetch("/api/auth/google/refresh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
+
+      if (!refreshRes.ok) {
+        throw new Error("Erro ao renovar sessão. Por favor, reconecte.");
+      }
+
+      const tokens = await refreshRes.json();
+      const token = tokens.access_token;
 
       if (!token) {
         toast.error("Não foi possível obter o token de acesso.", {
@@ -207,17 +223,15 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
         return;
       }
 
-      const res = await fetch(
-        `https://mybusinessreviews.googleapis.com/v1/${review.name}/reply`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ comment: replyText }),
-        },
-      );
+      const res = await fetch("/api/reviews/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          reviewName: review.name,
+          comment: replyText,
+        }),
+      });
 
       if (!res.ok) {
         throw new Error("Erro na API do Google");
@@ -238,7 +252,9 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
       setReplyTemplateName("");
     } catch (error) {
       console.error(error);
-      toast.error("Erro ao enviar resposta.", { id: toastId });
+      toast.error("Erro ao enviar resposta. Tente reconectar.", {
+        id: toastId,
+      });
     }
   };
 
@@ -683,6 +699,18 @@ export default function Dashboard() {
 
     fetchInsights();
   }, [businessData, dashboardMetrics]);
+
+  const profileCompleteness = useMemo(() => {
+    if (!businessData) return 0;
+    let score = 20; // Base score for having an account
+    if (businessData.title || businessData.name) score += 20;
+    if (businessData.profile?.description) score += 20;
+    if (businessData.storeCode || businessData.metadata?.mapsUri) score += 20;
+    if (businessData.phoneNumbers?.primaryPhone || businessData.languageCode)
+      score += 20;
+
+    return Math.min(score, 100);
+  }, [businessData]);
 
   useEffect(() => {
     const fetchTip = async () => {
@@ -1401,6 +1429,45 @@ export default function Dashboard() {
       </div>
 
       {/* AI Tip Banner */}
+      {/* Profile Completeness */}
+      {gmbConnected && (
+        <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl p-4 sm:p-5 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex-1 w-full">
+              <div className="flex justify-between items-end mb-2">
+                <div>
+                  <h3 className="font-bold text-gray-900 dark:text-white text-sm">
+                    Saúde do Perfil
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Completude das informações no Google
+                  </p>
+                </div>
+                <span className="text-sm font-bold text-blue-600">
+                  {profileCompleteness}%
+                </span>
+              </div>
+              <div className="w-full h-2.5 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-600 rounded-full transition-all duration-1000 ease-out"
+                  style={{ width: `${profileCompleteness}%` }}
+                ></div>
+              </div>
+            </div>
+            {profileCompleteness < 100 && (
+              <a
+                href="https://business.google.com/edit/info"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 text-sm font-semibold bg-gray-900 text-white py-2 px-4 rounded-xl hover:bg-black transition-colors flex items-center gap-2"
+              >
+                Completar Perfil
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
       {(aiTip || loadingTip) && (
         <div className="bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-100 dark:border-teal-800/50 p-4 sm:p-5 rounded-2xl flex gap-4 items-start relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
           <div className="absolute right-0 top-0 w-32 h-32 bg-teal-500 opacity-[0.03] rounded-bl-full pointer-events-none"></div>
