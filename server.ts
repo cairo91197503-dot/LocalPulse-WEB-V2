@@ -4,6 +4,16 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import { OAuth2Client } from "google-auth-library";
 
+function getGoogleCredentials() {
+  let clientId = (process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || "").replace(/\s+/g, '');
+  const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || "").replace(/\s+/g, '');
+  
+  if (clientId && !clientId.includes('-') && clientId.length === 71) {
+    clientId = clientId.slice(0, 12) + '-' + clientId.slice(12);
+  }
+  return { clientId, clientSecret };
+}
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -14,8 +24,7 @@ async function startServer() {
   app.post("/api/auth/google/exchange", async (req, res) => {
     try {
       const { code, redirectUri } = req.body;
-      const clientId = (process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || "").replace(/\s+/g, '');
-      const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || "").replace(/\s+/g, '');
+      const { clientId, clientSecret } = getGoogleCredentials();
 
       if (!clientId || !clientSecret) {
         return res.status(500).json({ error: "Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET" });
@@ -27,15 +36,14 @@ async function startServer() {
       res.json(tokens);
     } catch (error: any) {
       console.error("Exchange error:", error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error.message || error.toString() });
     }
   });
 
   app.post("/api/auth/google/refresh", async (req, res) => {
     try {
       const { refresh_token } = req.body;
-      const clientId = (process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || "").replace(/\s+/g, '');
-      const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || "").replace(/\s+/g, '');
+      const { clientId, clientSecret } = getGoogleCredentials();
 
       if (!clientId || !clientSecret) {
         return res.status(500).json({ error: "Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET" });
@@ -48,8 +56,22 @@ async function startServer() {
       res.json(credentials);
     } catch (error: any) {
       console.error("Refresh error:", error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error.message || error.toString() });
     }
+  });
+
+  // Debug endpoint to check client secret securely
+  app.get("/api/auth/google/debug-config", (req, res) => {
+    const { clientId, clientSecret } = getGoogleCredentials();
+    
+    res.json({
+      clientIdConfigured: !!clientId,
+      clientIdLength: clientId.length,
+      clientIdLast4: clientId ? clientId.slice(-4) : null,
+      clientSecretConfigured: !!clientSecret,
+      clientSecretLength: clientSecret.length,
+      clientSecretLast4: clientSecret ? clientSecret.slice(-4) : null,
+    });
   });
 
   // Proxy Endpoint for Sending Review Replies
@@ -59,6 +81,12 @@ async function startServer() {
       
       if (!token || !reviewName || !comment) {
         return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      // Handle mock reviews
+      if (reviewName.startsWith("reviews/mock")) {
+         console.log("Mocking reply for", reviewName);
+         return res.json({ comment, updateTime: new Date().toISOString() });
       }
 
       const response = await fetch(
@@ -83,7 +111,7 @@ async function startServer() {
       res.json(data);
     } catch (error: any) {
       console.error("Reply error:", error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error.message || error.toString() });
     }
   });
 
@@ -298,13 +326,108 @@ async function startServer() {
     }
   });
 
+  // --- GMB Proxy Routes with Retry & Rate Limiting ---
+const fetchWithRetry = async (url, options, maxRetries = 3) => {
+  let attempt = 0;
+  while (attempt < maxRetries) {
+    const res = await fetch(url, options);
+    if (res.status === 429) {
+      attempt++;
+      const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+      console.warn(`[Proxy] 429 Quota Exceeded for ${url}. Retrying in ${delay}ms (attempt ${attempt})`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      continue;
+    }
+    return res;
+  }
+  return fetch(url, options); // final attempt
+};
+
+app.get("/api/gmb/accounts", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: "Missing authorization" });
+    
+    const response = await fetchWithRetry(
+      "https://mybusinessaccountmanagement.googleapis.com/v1/accounts",
+      { headers: { Authorization: authHeader } }
+    );
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      return res.status(response.status).json({ error: errorText });
+    }
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error("Proxy Accounts Error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/gmb/accounts/:accountId/locations", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: "Missing authorization" });
+    
+    const accountId = req.params.accountId;
+    const response = await fetchWithRetry(
+      `https://mybusinessbusinessinformation.googleapis.com/v1/accounts/${accountId}/locations?readMask=name,title,metadata,profile,languageCode,storeCode`,
+      { headers: { Authorization: authHeader } }
+    );
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      return res.status(response.status).json({ error: errorText });
+    }
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error("Proxy Locations Error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/gmb/locations/reviews", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: "Missing authorization" });
+    
+    const locationId = req.params.locationId;
+    // locations is already in the path, but mybusinessreviews takes accounts/xxx/locations/yyy or locations/yyy
+    // In Conexao.tsx it uses location.name which is typically "locations/xxx" or "accounts/xxx/locations/yyy"
+    // So we pass the full name in a query param to avoid route matching issues.
+    const locationName = req.query.name;
+    
+    if (!locationName) return res.status(400).json({ error: "Missing location name" });
+
+    const response = await fetchWithRetry(
+      `https://mybusinessreviews.googleapis.com/v1/${locationName}/reviews`,
+      { headers: { Authorization: authHeader } }
+    );
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      return res.status(response.status).json({ error: errorText });
+    }
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error("Proxy Reviews Error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+// --- End GMB Proxy Routes ---
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
-    app.use(vite.middlewares);
+    
+
+  app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));

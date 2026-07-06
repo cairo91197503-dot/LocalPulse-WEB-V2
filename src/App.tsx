@@ -333,9 +333,12 @@ export default function App() {
             } else {
               setGmbConnected(false);
             }
+          }, (error) => {
+            if ((error as any).code !== "unavailable" && !(error as any).message?.includes("offline")) { console.error("Firebase Snapshot Error (onboarding check):", error); } else { console.warn("Offline: Firebase Snapshot Error (onboarding check)"); }
+            setNeedsOnboarding(false);
           });
         } catch (error) {
-          console.error("Error checking onboarding status:", error);
+          if ((error as any).code !== "unavailable" && !(error as any).message?.includes("offline")) { console.error("Error checking onboarding status:", error); } else { console.warn("Offline: Error checking onboarding status"); }
           // Default to false on error to not block the user
           setNeedsOnboarding(false);
         }

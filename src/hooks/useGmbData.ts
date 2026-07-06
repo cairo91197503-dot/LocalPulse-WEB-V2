@@ -33,7 +33,7 @@ export function useGmbData() {
       }
       setLoading(false);
     }, (error) => {
-      console.error("Error fetching GMB data:", error);
+      if (error.code !== "unavailable" && !error.message?.includes("offline")) { console.error("Error fetching GMB data:", error); } else { console.warn("Offline: Error fetching GMB data"); }
       setLoading(false);
     });
 

@@ -157,16 +157,17 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
         body: JSON.stringify({ reviewText, reviewerName }),
       });
 
-      const data = await response.json();
-      if (response.ok) {
-        setReplyText(data.reply);
-        setReplyType("ai");
-        toast.success("Resposta gerada com IA!");
-      } else {
-        toast.error(
-          "Erro ao gerar resposta: " + (data.error || "Desconhecido"),
-        );
+      if (!response.ok) {
+        const text = await response.text();
+        let errorMsg = "Desconhecido";
+        try { errorMsg = JSON.parse(text).error; } catch(e) {}
+        toast.error("Erro ao gerar resposta: " + errorMsg);
+        return;
       }
+      const data = await response.json();
+      setReplyText(data.reply);
+      setReplyType("ai");
+      toast.success("Resposta gerada com IA!");
     } catch (error) {
       console.error("Error generating reply:", error);
       toast.error("Erro na conexão com o servidor.");
@@ -210,7 +211,7 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
         throw new Error("Erro ao renovar sessão. Por favor, reconecte.");
       }
 
-      const tokens = await refreshRes.json();
+      const refreshContentType = refreshRes.headers.get("content-type"); if (!refreshContentType || refreshContentType.indexOf("application/json") === -1) throw new Error("Expected JSON but got " + refreshContentType); const tokens = await refreshRes.json();
       const token = tokens.access_token;
 
       if (!token) {
@@ -737,9 +738,11 @@ export default function Dashboard() {
                 })),
               }),
             });
-            const data = await response.json();
-            if (response.ok && data.tip) {
-              setAiTip(data.tip);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.tip) {
+                setAiTip(data.tip);
+              }
             }
           }
         } catch (error) {

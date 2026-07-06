@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, browserSessionPersistence, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 import { getAnalytics, isSupported } from 'firebase/analytics';
 import { getMessaging, isSupported as isMessagingSupported } from 'firebase/messaging';
 
@@ -19,9 +19,7 @@ const firebaseConfig = env.VITE_FIREBASE_API_KEY ? {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
-});
+export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
 
 export let analytics: any = null;

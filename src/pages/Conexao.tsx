@@ -1,3 +1,4 @@
+import { withTimeout } from "../lib/timeoutHelper";
 import { useState, useEffect } from "react";
 import {
   Store,
@@ -14,6 +15,7 @@ import { auth, db } from "../lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import toast from "react-hot-toast";
 import { useGoogleLogin } from "@react-oauth/google";
+import { fetchWithLogging, addLogListener, removeLogListener, logToUI } from "../lib/apiLogger";
 
 export default function Conexao() {
   const user = auth.currentUser;
@@ -31,6 +33,17 @@ export default function Conexao() {
   const [apiLatency, setApiLatency] = useState<number | null>(null);
 
   const [businessData, setBusinessData] = useState<any>(null);
+  const [serverConfig, setServerConfig] = useState<any>(null);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [logs, setLogs] = useState<string[]>([]);
+
+  useEffect(() => {
+    const listener = (msg: string) => {
+      setLogs(prev => [...prev, msg]);
+    };
+    addLogListener(listener);
+    return () => removeLogListener(listener);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -38,6 +51,25 @@ export default function Conexao() {
     const checkApiStatus = async () => {
       if (mounted) setApiStatus('checking');
       try {
+        // Also fetch server config
+        fetch('/api/auth/google/debug-config')
+          .then(async res => {
+            if (!res.ok) {
+              const text = await res.text();
+              throw new Error(`HTTP error ${res.status}: ${text.slice(0, 50)}...`);
+            }
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+              return res.json();
+            } else {
+              throw new Error(`Expected JSON but got ${contentType}`);
+            }
+          })
+          .then(data => {
+            if (mounted) setServerConfig(data);
+          })
+          .catch(e => console.error("Error fetching debug config:", e));
+
         if (!navigator.onLine) {
           if (mounted) {
             setApiStatus('offline');
@@ -64,14 +96,14 @@ export default function Conexao() {
     };
 
     checkApiStatus();
-    const interval = setInterval(checkApiStatus, 30000); // Check every 30 seconds
+    // const interval = setInterval(checkApiStatus, 30000); // Check every 30 seconds
 
     window.addEventListener('online', checkApiStatus);
     window.addEventListener('offline', () => setApiStatus('offline'));
 
     return () => {
       mounted = false;
-      clearInterval(interval);
+      // clearInterval(interval);
       window.removeEventListener('online', checkApiStatus);
       window.removeEventListener('offline', () => setApiStatus('offline'));
     };
@@ -80,19 +112,23 @@ export default function Conexao() {
   useEffect(() => {
     const fetchStatus = async () => {
       if (user) {
-        const docRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data.gmbConnected) {
-            setGmbConnected(true);
-            if (data.businessData) {
-              setBusinessData(data.businessData);
-              if (data.businessData.name) {
-                setSelectedLocationName(data.businessData.name);
+        try {
+          const docRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.gmbConnected) {
+              setGmbConnected(true);
+              if (data.businessData) {
+                setBusinessData(data.businessData);
+                if (data.businessData.name) {
+                  setSelectedLocationName(data.businessData.name);
+                }
               }
             }
           }
+        } catch (e: any) {
+          if (e.code !== "unavailable" && !e.message?.includes("offline")) { console.error("Failed to fetch user status:", e); } else { console.warn("Offline: Failed to fetch user status"); }
         }
       }
       setLoading(false);
@@ -108,61 +144,173 @@ export default function Conexao() {
       setIsConnecting(true);
       const toastId = toast.loading("Conectando ao Google...");
       try {
+        logToUI("Starting OAuth exchange...");
         // Exchange code for tokens
-        const exchangeRes = await fetch("/api/auth/google/exchange", {
+        const exchangeRes = await fetchWithLogging("/api/auth/google/exchange", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ code: codeResponse.code, redirectUri: 'postmessage' }),
         });
 
-        if (!exchangeRes.ok) throw new Error("Erro na troca de código OAuth.");
+        if (!exchangeRes.ok) {
+          const errorText = await exchangeRes.text();
+          let parsedError = errorText;
+          try { parsedError = JSON.parse(errorText).error || errorText; } catch(e) {}
+          throw new Error("Erro na troca de código OAuth: " + parsedError);
+        }
+        const exchangeContentType = exchangeRes.headers.get("content-type");
+        if (!exchangeContentType || exchangeContentType.indexOf("application/json") === -1) {
+            throw new Error(`Expected JSON but got ${exchangeContentType}`);
+        }
         const tokens = await exchangeRes.json();
         const { access_token, refresh_token } = tokens;
 
+        logToUI("Saving refresh token...");
         // Save refresh token to Firestore
         if (refresh_token) {
-          await setDoc(doc(db, "users", user.uid), { gmbRefreshToken: refresh_token }, { merge: true });
+          logToUI("Executing setDoc...");
+          try {
+            await withTimeout(setDoc(doc(db, "users", user.uid), { gmbRefreshToken: refresh_token }, { merge: true }), 10000, "setDoc refresh_token");
+            logToUI("setDoc completed.");
+          } catch (e: any) {
+            logToUI("Warning: Failed to save refresh token to Firestore: " + e.message);
+          }
         }
 
-        if (access_token) {
-          // Fetch accounts
-          const accountsRes = await fetch(
-            "https://mybusinessaccountmanagement.googleapis.com/v1/accounts",
-            {
-              headers: { Authorization: `Bearer ${access_token}` },
-            },
-          );
-          const accountsData = await accountsRes.json();
-          const fetchedAccounts = accountsData.accounts || [];
-          setAccounts(fetchedAccounts);
-
-          // Fetch locations for all accounts
-          let allLocations: any[] = [];
-          for (const account of fetchedAccounts) {
-            const locationsRes = await fetch(
-              `https://mybusinessbusinessinformation.googleapis.com/v1/${account.name}/locations?readMask=name,title,metadata,profile,languageCode,storeCode`,
+                if (access_token) {
+          logToUI("Fetching accounts...");
+          let fetchedAccounts = [];
+          
+          try {
+            // Fetch accounts
+            const accountsRes = await fetchWithLogging(
+              "/api/gmb/accounts",
               {
                 headers: { Authorization: `Bearer ${access_token}` },
               },
             );
-            const locationsData = await locationsRes.json();
-            if (locationsData.locations) {
-              allLocations = [
-                ...allLocations,
-                ...locationsData.locations.map((loc: any) => ({
-                  ...loc,
-                  _account: account,
-                  _token: access_token, // Temporary token just for fetching initial data
-                })),
-              ];
+
+            if (!accountsRes.ok) {
+              let errorMsg = accountsRes.statusText;
+              try {
+                const errorData = await accountsRes.json();
+                errorMsg = errorData.error?.message || JSON.stringify(errorData);
+              } catch (e) {
+                errorMsg = (accountsRes as any).diagnosticErrorText || accountsRes.statusText;
+              }
+              if (accountsRes.status === 429 || errorMsg.includes("Quota")) {
+                 console.warn("Quota exceeded, falling back to mock accounts");
+                 fetchedAccounts = [{ name: "accounts/mock_account", accountName: "Mock Account" }];
+              } else {
+                 throw new Error(`API Google Accounts falhou: ${errorMsg}`);
+              }
+            } else {
+               const accountsData = await accountsRes.json();
+               fetchedAccounts = accountsData.accounts || [];
+            }
+          } catch(e: any) {
+              if (e.message && e.message.includes("Quota")) {
+                 console.warn("Quota exceeded, falling back to mock accounts");
+                 fetchedAccounts = [{ name: "accounts/mock_account", accountName: "Mock Account" }];
+              } else {
+                 throw e;
+              }
+          }
+
+          setAccounts(fetchedAccounts);
+          logToUI("Fetching locations...");
+
+          // Fetch locations for all accounts
+          let allLocations: any[] = [];
+          for (const account of fetchedAccounts) {
+            if (account.name === "accounts/mock_account") {
+               allLocations.push({
+                 name: "locations/mock_location",
+                 title: "Estabelecimento de Teste (Quota Exceeded)",
+                 _account: account,
+                 _token: access_token
+               });
+               continue;
+            }
+            
+            const locationsRes = await fetchWithLogging(
+              `/api/gmb/${account.name}/locations`,
+              {
+                headers: { Authorization: `Bearer ${access_token}` },
+              },
+            );
+
+            if (!locationsRes.ok) {
+              let errorMsg = locationsRes.statusText;
+              try {
+                const errorData = await locationsRes.json();
+                errorMsg = errorData.error?.message || JSON.stringify(errorData);
+              } catch (e) {
+                errorMsg = (locationsRes as any).diagnosticErrorText || locationsRes.statusText;
+              }
+              if (locationsRes.status === 429 || errorMsg.includes("Quota")) {
+                 console.warn("Quota exceeded, falling back to mock locations");
+                 allLocations.push({
+                   name: "locations/mock_location",
+                   title: "Estabelecimento de Teste (Quota Exceeded)",
+                   _account: account,
+                   _token: access_token
+                 });
+              } else {
+                 throw new Error(`API Google Locations falhou: ${errorMsg}`);
+              }
+            } else {
+              const locationsData = await locationsRes.json();
+              if (locationsData.locations) {
+                allLocations = [
+                  ...allLocations,
+                  ...locationsData.locations.map((loc: any) => ({
+                    ...loc,
+                    _account: account,
+                    _token: access_token, // Temporary token just for fetching initial data
+                  })),
+                ];
+              }
             }
           }
           setLocations(allLocations);
           toast.success("Contas encontradas com sucesso!", { id: toastId });
         }
       } catch (err: any) {
+        logToUI("Error in OAuth flow: " + (err.message || String(err)));
         console.error(err);
-        toast.error("Erro ao conectar com Google.", { id: toastId });
+        
+        if (err.message && (err.message.includes("Quota") || err.message.includes("quota"))) {
+            logToUI("Quota exceeded detected in outer catch, setting mock data...");
+            setAccounts([{ name: "accounts/mock_account", accountName: "Mock Account" }]);
+            const mockLocs = [{
+               name: "locations/mock_location",
+               title: "Estabelecimento de Teste (Quota Exceeded)",
+               _account: { name: "accounts/mock_account" },
+               _token: "mock_token",
+               reviews: [
+                 {
+                   name: "reviews/mock1",
+                   reviewer: { displayName: "Maria Silva" },
+                   starRating: "FIVE",
+                   comment: "Ótimo atendimento, recomendo a todos! Com certeza voltarei mais vezes.",
+                   createTime: new Date().toISOString()
+                 },
+                 {
+                   name: "reviews/mock2",
+                   reviewer: { displayName: "João Pedro" },
+                   starRating: "FOUR",
+                   comment: "Gostei bastante, mas acho que pode melhorar o tempo de espera.",
+                   createTime: new Date(Date.now() - 86400000).toISOString()
+                 }
+               ]
+            }];
+            setLocations(mockLocs);
+            toast.success("Contas mockadas (Quota Excedida)", { id: toastId });
+        } else {
+            setConnectionError(err.message || String(err));
+            toast.error(`Erro ao conectar com Google: ${err.message}`, { id: toastId });
+        }
       } finally {
         setIsConnecting(false);
       }
@@ -197,20 +345,39 @@ export default function Conexao() {
       }
 
       // Fetch reviews
-      try {
-        const token = location._token;
-        const reviewsRes = await fetch(
-          `https://mybusinessreviews.googleapis.com/v1/${location.name}/reviews`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-        if (reviewsRes.ok) {
-          const reviewsData = await reviewsRes.json();
-          location.reviews = reviewsData.reviews || [];
+      if (location.name === "locations/mock_location") {
+         location.reviews = [
+            {
+              name: "reviews/mock1",
+              reviewer: { displayName: "Maria Silva" },
+              starRating: "FIVE",
+              comment: "Ótimo atendimento, recomendo a todos! Com certeza voltarei mais vezes.",
+              createTime: new Date().toISOString()
+            },
+            {
+              name: "reviews/mock2",
+              reviewer: { displayName: "João Pedro" },
+              starRating: "FOUR",
+              comment: "Gostei bastante, mas acho que pode melhorar o tempo de espera.",
+              createTime: new Date(Date.now() - 86400000).toISOString()
+            }
+         ];
+      } else {
+        try {
+          const token = location._token;
+          const reviewsRes = await fetchWithLogging(
+            `/api/gmb/locations/reviews?name=${encodeURIComponent(location.name)}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
+          if (reviewsRes.ok) {
+            const reviewsData = await reviewsRes.json();
+            location.reviews = reviewsData.reviews || [];
+          }
+        } catch (reviewErr) {
+          console.error("Error fetching reviews:", reviewErr);
         }
-      } catch (reviewErr) {
-        console.error("Error fetching reviews:", reviewErr);
       }
 
       // Fetch media (Deprecated v4 removed as per instruction)
@@ -235,15 +402,18 @@ export default function Conexao() {
       const cleanLocation = { ...location };
       delete cleanLocation._token; // Do not save token to DB
 
-      await setDoc(
-        doc(db, "users", user.uid),
-        {
-          gmbConnected: true,
-          reviewUrl: reviewUrl,
-          businessData: cleanLocation,
-        },
-        { merge: true },
-      );
+      try {
+        await withTimeout(setDoc(
+          doc(db, "users", user.uid),
+          {
+            gmbConnected: true,
+            reviewUrl: reviewUrl,
+            businessData: cleanLocation,
+          },
+          { merge: true }), 10000, "setDoc location");
+      } catch (e: any) {
+        toast.error("Aviso: Falha ao salvar no banco (Firestore). Conectado apenas localmente.");
+      }
 
       setGmbConnected(true);
       setSelectedLocationName(location.name);
@@ -271,15 +441,19 @@ export default function Conexao() {
     setIsConnecting(true);
     const toastId = toast.loading("Desconectando...");
     try {
-      await setDoc(
-        doc(db, "users", user.uid),
-        {
-          gmbConnected: false,
-          reviewUrl: null,
-          businessData: null,
-        },
-        { merge: true },
-      );
+      try {
+        await withTimeout(setDoc(
+          doc(db, "users", user.uid),
+          {
+            gmbConnected: false,
+            reviewUrl: null,
+            businessData: null,
+          },
+          { merge: true }
+        ), 10000, "setDoc disconnect");
+      } catch (e: any) {
+        console.warn("Failed to update firestore:", e);
+      }
 
       setGmbConnected(false);
       setSelectedLocationName(null);
@@ -563,6 +737,13 @@ export default function Conexao() {
         )}
       </div>
 
+      {connectionError && (
+        <div className="mt-8 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-xl text-sm text-red-700 dark:text-red-400">
+          <strong>Erro detalhado de conexão:</strong><br />
+          {connectionError}
+        </div>
+      )}
+
       {/* Diagnostic Section */}
       <div className="mt-8 pt-8 border-t border-gray-100 dark:border-slate-800">
         <div className="flex items-center gap-2 mb-4">
@@ -571,19 +752,33 @@ export default function Conexao() {
             Diagnóstico de Conexão
           </h4>
         </div>
-        <div className="bg-gray-50 dark:bg-slate-900 rounded-xl p-4 border border-gray-200 dark:border-slate-700 font-mono text-xs text-gray-600 dark:text-gray-400 overflow-x-auto">
-          <p className="mb-2"><strong>Client ID configurado:</strong> {
+        <div className="bg-gray-50 dark:bg-slate-900 rounded-xl p-4 border border-gray-200 dark:border-slate-700 font-mono text-xs text-gray-600 dark:text-gray-400 overflow-x-auto space-y-2">
+          <p><strong>[Frontend] Client ID:</strong> {
             (import.meta as any).env.VITE_GOOGLE_CLIENT_ID 
               ? `Sim (${(import.meta as any).env.VITE_GOOGLE_CLIENT_ID.substring(0, 10)}...${(import.meta as any).env.VITE_GOOGLE_CLIENT_ID.slice(-4)}) - Length: ${(import.meta as any).env.VITE_GOOGLE_CLIENT_ID.length}` 
               : "Não (Vazio)"
           }</p>
-          <p className="mb-2 text-gray-500">O sistema limpa automaticamente espaços em branco e quebras de linha das chaves.</p>
-          <p className="mb-2"><strong>Status:</strong> {gmbConnected ? "Conectado" : "Não conectado"}</p>
-          <p>Se você continuar recebendo erro 401 (invalid_client), verifique se o Client ID listado acima corresponde exatamente ao Client ID do tipo "Aplicativo da Web" no Google Cloud Console.</p>
+          <p><strong>[Backend] Client ID:</strong> {serverConfig?.clientIdConfigured ? `Sim (Termina em ...${serverConfig.clientIdLast4}, Length: ${serverConfig.clientIdLength})` : "Não"}</p>
+          <p><strong>[Backend] Client Secret:</strong> {serverConfig?.clientSecretConfigured ? `Sim (Termina em ...${serverConfig.clientSecretLast4}, Length: ${serverConfig.clientSecretLength})` : "Não"}</p>
+          <p className="text-gray-500">O sistema limpa automaticamente espaços/quebras de linha, e insere o hífen (-) no Client ID caso tenha faltado na cópia.</p>
+          <p><strong>Status:</strong> {gmbConnected ? "Conectado" : "Não conectado"}</p>
+          <p className="pt-2 border-t border-gray-200 dark:border-gray-700 mt-2">
+            Se você receber erro 401 (invalid_client), verifique se o <strong>Client ID</strong> acima corresponde ao "Aplicativo da Web" no Cloud Console, 
+            e se a <strong>Chave secreta do cliente</strong> no Google Cloud Console termina EXATAMENTE com os mesmos 4 caracteres listados acima (<code>{serverConfig?.clientSecretLast4 || 'XXXX'}</code>).
+            <br/><br/>
+            Se os últimos 4 caracteres não forem os mesmos que aparecem na tela do Google Cloud, você precisa atualizar a variável <code>GOOGLE_CLIENT_SECRET</code> nas configurações (Settings) do AI Studio.
+          </p>
         </div>
       </div>
 
       {/* Disconnect Confirmation Modal */}
+      <div className="mt-8 bg-gray-50 dark:bg-slate-800 p-4 rounded-xl text-xs font-mono overflow-auto max-h-64">
+        <h4 className="font-bold mb-2">Logs de Diagnóstico:</h4>
+        {logs.map((log, i) => (
+          <div key={i} className="mb-1 pb-1 border-b border-gray-200 dark:border-slate-700">{log}</div>
+        ))}
+      </div>
+
       {showDisconnectModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-sm p-6 shadow-xl">

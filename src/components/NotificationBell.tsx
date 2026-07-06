@@ -44,7 +44,7 @@ export function NotificationBell() {
             }
           }
         } catch (error) {
-          console.error("Error setting up Firebase Messaging:", error);
+          if ((error as any).code !== "unavailable" && !(error as any).message?.includes("offline")) { console.error("Error setting up Firebase Messaging:", error); } else { console.warn("Offline: Error setting up Firebase Messaging"); }
         }
 
         onMessage(messaging, (payload) => {

@@ -138,6 +138,10 @@ export default function Diagnosis() {
         );
         throw new Error("Failed to fetch diagnosis");
       }
+      const contentType = res.headers.get("content-type");
+      if (!contentType || contentType.indexOf("application/json") === -1) {
+        throw new Error(`Expected JSON but got ${contentType}`);
+      }
       const json = await res.json();
       console.log("[Diagnosis UI] Resposta recebida da API (JSON):", json);
       setData(json);

@@ -33,7 +33,7 @@ export default function QrCodeView() {
             }
           }
         } catch (error) {
-          console.error("Erro ao buscar URL:", error);
+          if ((error as any).code !== "unavailable" && !(error as any).message?.includes("offline")) { console.error("Erro ao buscar URL:", error); } else { console.warn("Offline: Erro ao buscar URL"); }
         }
       }
       setLoading(false);
