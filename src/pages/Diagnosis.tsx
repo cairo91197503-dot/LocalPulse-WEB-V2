@@ -122,12 +122,16 @@ export default function Diagnosis() {
         businessData: businessContext,
       });
 
+      const idToken = await auth.currentUser?.getIdToken();
+
       const res = await fetch("/api/diagnosis", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
         body: JSON.stringify({ businessData: businessContext }),
       });
-
       console.log("[Diagnosis UI] Status da API /diagnosis:", res.status);
 
       if (!res.ok) {
