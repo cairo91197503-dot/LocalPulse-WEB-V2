@@ -741,9 +741,13 @@ export default function Dashboard() {
             .slice(0, 10);
 
           if (recentReviews.length > 0) {
+            const idToken = await auth.currentUser?.getIdToken();
             const response = await fetch("/api/generate-tip", {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${idToken}`,
+              },
               body: JSON.stringify({
                 recentReviews: recentReviews.map((r: any) => ({
                   starRating: r.starRating,
