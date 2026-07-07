@@ -690,13 +690,18 @@ export default function Dashboard() {
 
       setLoadingInsights(true);
       try {
+        const idToken = await auth.currentUser?.getIdToken();
         const response = await fetch("/api/insights", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${idToken}`,
+          },
           body: JSON.stringify({
             metrics: dashboardMetrics,
             businessData: businessData,
           }),
+        });
         });
 
         if (response.ok) {
