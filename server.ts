@@ -3,6 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import { OAuth2Client } from "google-auth-library";
+import admin from "firebase-admin";
 
 function getGoogleCredentials() {
   let clientId = (process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || "").replace(/\s+/g, '');
@@ -12,6 +13,40 @@ function getGoogleCredentials() {
     clientId = clientId.slice(0, 12) + '-' + clientId.slice(12);
   }
   return { clientId, clientSecret };
+}
+
+// --- Firebase Admin: inicializa a conexão usando o segredo ---
+function getFirebaseAdmin() {
+  if (admin.apps.length > 0) return admin.app();
+
+  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+  if (!serviceAccountJson) {
+    throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON não configurado no ambiente.");
+  }
+
+  const serviceAccount = JSON.parse(serviceAccountJson);
+  return admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
+
+// --- Middleware "segurança": confere o crachá (token) do usuário ---
+async function requireAuth(req: any, res: any, next: any) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Token de autenticação ausente." });
+    }
+
+    const idToken = authHeader.split("Bearer ")[1];
+    getFirebaseAdmin();
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    req.user = decodedToken;
+    next();
+  } catch (error) {
+    console.error("Auth error:", error);
+    return res.status(401).json({ error: "Token inválido ou expirado." });
+  }
 }
 
 async function startServer() {
@@ -61,7 +96,7 @@ async function startServer() {
   });
 
   // Proxy Endpoint for Sending Review Replies
-  app.post("/api/reviews/reply", async (req, res) => {
+  app.post("/api/reviews/reply", requireAuth, async (req, res) => {
     try {
       const { token, reviewName, comment } = req.body;
       
@@ -102,7 +137,7 @@ async function startServer() {
   });
 
   // AI API Route
-  app.post("/api/diagnosis", async (req, res) => {
+  app.post("/api/diagnosis", requireAuth, async (req, res) => {
     try {
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
@@ -172,7 +207,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/insights", async (req, res) => {
+  app.post("/api/insights", requireAuth, async (req, res) => {
     try {
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
@@ -221,7 +256,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/generate-reply", async (req, res) => {
+  app.post("/api/generate-reply", requireAuth, async (req, res) => {
     try {
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
@@ -262,7 +297,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/generate-tip", async (req, res) => {
+  app.post("/api/generate-tip", requireAuth, async (req, res) => {
     try {
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
@@ -380,9 +415,6 @@ app.get("/api/gmb/locations/reviews", async (req, res) => {
     if (!authHeader) return res.status(401).json({ error: "Missing authorization" });
     
     const locationId = req.params.locationId;
-    // locations is already in the path, but mybusinessreviews takes accounts/xxx/locations/yyy or locations/yyy
-    // In Conexao.tsx it uses location.name which is typically "locations/xxx" or "accounts/xxx/locations/yyy"
-    // So we pass the full name in a query param to avoid route matching issues.
     const locationName = req.query.name;
     
     if (!locationName) return res.status(400).json({ error: "Missing location name" });
