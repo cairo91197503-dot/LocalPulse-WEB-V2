@@ -151,9 +151,13 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
     setReplyText("");
 
     try {
+      const idToken = await auth.currentUser?.getIdToken();
       const response = await fetch("/api/generate-reply", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
         body: JSON.stringify({ reviewText, reviewerName }),
       });
 
