@@ -60,20 +60,6 @@ async function startServer() {
     }
   });
 
-  // Debug endpoint to check client secret securely
-  app.get("/api/auth/google/debug-config", (req, res) => {
-    const { clientId, clientSecret } = getGoogleCredentials();
-    
-    res.json({
-      clientIdConfigured: !!clientId,
-      clientIdLength: clientId.length,
-      clientIdLast4: clientId ? clientId.slice(-4) : null,
-      clientSecretConfigured: !!clientSecret,
-      clientSecretLength: clientSecret.length,
-      clientSecretLast4: clientSecret ? clientSecret.slice(-4) : null,
-    });
-  });
-
   // Proxy Endpoint for Sending Review Replies
   app.post("/api/reviews/reply", async (req, res) => {
     try {
@@ -264,7 +250,7 @@ async function startServer() {
       `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: prompt,
       });
 
@@ -314,7 +300,7 @@ async function startServer() {
       `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: prompt,
       });
 
