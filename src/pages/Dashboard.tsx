@@ -702,7 +702,6 @@ export default function Dashboard() {
             businessData: businessData,
           }),
         });
-        });
 
         if (response.ok) {
           const data = await response.json();
