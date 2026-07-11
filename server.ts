@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
@@ -54,6 +55,7 @@ async function startServer() {
   const PORT = process.env.PORT || 3000;
 
   app.use(express.json());
+  app.use(cors());
 
   // OAuth endpoints for GBP API
   app.post("/api/auth/google/exchange", async (req, res) => {
