@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router";
 import { auth, db } from "../lib/firebase";
+import { API_BASE_URL } from "../lib/apiConfig";
 import { doc, getDoc } from "firebase/firestore";
 import { Steps } from "intro.js-react";
 import "intro.js/introjs.css";
@@ -124,7 +125,7 @@ export default function Diagnosis() {
 
       const idToken = await auth.currentUser?.getIdToken();
 
-      const res = await fetch("/api/diagnosis", {
+      const res = await fetch(`${API_BASE_URL}/api/diagnosis`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
