@@ -12,6 +12,7 @@ import {
   WifiOff,
 } from "lucide-react";
 import { auth, db } from "../lib/firebase";
+import { API_BASE_URL } from "../lib/apiConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import toast from "react-hot-toast";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -51,24 +52,6 @@ export default function Conexao() {
     const checkApiStatus = async () => {
       if (mounted) setApiStatus('checking');
       try {
-        // Also fetch server config
-        fetch('/api/auth/google/debug-config')
-          .then(async res => {
-            if (!res.ok) {
-              const text = await res.text();
-              throw new Error(`HTTP error ${res.status}: ${text.slice(0, 50)}...`);
-            }
-            const contentType = res.headers.get("content-type");
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-              return res.json();
-            } else {
-              throw new Error(`Expected JSON but got ${contentType}`);
-            }
-          })
-          .then(data => {
-            if (mounted) setServerConfig(data);
-          })
-          .catch(e => console.error("Error fetching debug config:", e));
 
         if (!navigator.onLine) {
           if (mounted) {
@@ -146,7 +129,7 @@ export default function Conexao() {
       try {
         logToUI("Starting OAuth exchange...");
         // Exchange code for tokens
-        const exchangeRes = await fetchWithLogging("/api/auth/google/exchange", {
+        const exchangeRes = await fetchWithLogging(`${API_BASE_URL}/api/auth/google/exchange`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ code: codeResponse.code, redirectUri: 'postmessage' }),
@@ -184,7 +167,7 @@ export default function Conexao() {
           try {
             // Fetch accounts
             const accountsRes = await fetchWithLogging(
-              "/api/gmb/accounts",
+              `${API_BASE_URL}/api/gmb/accounts`,
               {
                 headers: { Authorization: `Bearer ${access_token}` },
               },
@@ -234,7 +217,7 @@ export default function Conexao() {
             }
             
             const locationsRes = await fetchWithLogging(
-              `/api/gmb/${account.name}/locations`,
+              `${API_BASE_URL}/api/gmb/${account.name}/locations`,
               {
                 headers: { Authorization: `Bearer ${access_token}` },
               },
@@ -366,7 +349,7 @@ export default function Conexao() {
         try {
           const token = location._token;
           const reviewsRes = await fetchWithLogging(
-            `/api/gmb/locations/reviews?name=${encodeURIComponent(location.name)}`,
+            `${API_BASE_URL}/api/gmb/locations/reviews?name=${encodeURIComponent(location.name)}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             },
