@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useNavigate, Link } from "react-router";
 import { auth, db, analytics } from "../lib/firebase";
+import { API_BASE_URL } from "../lib/apiConfig";
 import { sendEmailVerification } from "firebase/auth";
 import { logEvent } from "firebase/analytics";
 import { useGmbData } from "../hooks/useGmbData";
@@ -152,7 +153,7 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
 
     try {
       const idToken = await auth.currentUser?.getIdToken();
-      const response = await fetch("/api/generate-reply", {
+const response = await fetch(`${API_BASE_URL}/api/generate-reply`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -205,7 +206,7 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
       }
 
       // Get fresh access token using refresh token
-      const refreshRes = await fetch("/api/auth/google/refresh", {
+const refreshRes = await fetch(`${API_BASE_URL}/api/auth/google/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refresh_token: refreshToken }),
@@ -226,7 +227,7 @@ const ReviewsList = memo(({ reviews }: { reviews: any[] }) => {
       }
 
       const idToken = await auth.currentUser?.getIdToken();
-      const res = await fetch("/api/reviews/reply", {
+      const res = await fetch(`${API_BASE_URL}/api/reviews/reply`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -691,7 +692,7 @@ export default function Dashboard() {
       setLoadingInsights(true);
       try {
         const idToken = await auth.currentUser?.getIdToken();
-        const response = await fetch("/api/insights", {
+        const response = await fetch(`${API_BASE_URL}/api/insights`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -741,7 +742,7 @@ export default function Dashboard() {
 
           if (recentReviews.length > 0) {
             const idToken = await auth.currentUser?.getIdToken();
-            const response = await fetch("/api/generate-tip", {
+            const response = await fetch(`${API_BASE_URL}/api/generate-tip`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
