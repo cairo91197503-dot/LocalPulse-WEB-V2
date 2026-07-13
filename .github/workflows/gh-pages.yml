@@ -33,9 +33,9 @@ jobs:
         run: npm ci
         
       - name: Build
-     run: npm run build
-     env:
-       VITE_API_URL: https://localpulse-web-v2-backend.onrender.com
+        run: npm run build
+        env:
+          VITE_API_URL: https://localpulse-web-v2-backend.onrender.com
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
