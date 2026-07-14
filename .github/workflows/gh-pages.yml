@@ -36,6 +36,7 @@ jobs:
         run: npm run build
         env:
           VITE_API_URL: https://localpulse-web-v2-backend.onrender.com
+          VITE_GOOGLE_CLIENT_ID: 763259258045-69bls94cgsnf9e55implb12f4r37n9nk.apps.googleusercontent.com
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
